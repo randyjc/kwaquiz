@@ -58,6 +58,11 @@ pnpm --filter @rahoot/web dev      # web on 3000
 - Config, quizzes, and media live under `config/` (`config/game.json`, `config/quizz`, `config/media`). Mount `config/` as a volume so redeploys keep data.
 - Redis (`REDIS_URL`) stores game snapshots so reconnect/resume works.
 - Upload size: `MEDIA_MAX_UPLOAD_MB` (default 50MB).
+- Manager password: set in `config/game.json` or override with `MANAGER_PASSWORD` env var.
+
+### Manager password
+- Default: `managerPassword` in `config/game.json`
+- Override via env: `MANAGER_PASSWORD` (takes precedence over the file)
 
 ### config/game.json
 ```json
