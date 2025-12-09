@@ -37,7 +37,7 @@ const GameWrapper = ({
   const { isConnected } = useSocket()
   const { player } = usePlayerStore()
   const { questionStates, setQuestionStates } = useQuestionStore()
-  const { backgroundUrl } = useThemeStore()
+  const { backgroundUrl, brandName, setBackground, setBrandName } = useThemeStore()
   const [isDisabled, setIsDisabled] = useState(false)
   const next = statusName ? MANAGER_SKIP_BTN[statusName] : null
 
@@ -51,6 +51,27 @@ const GameWrapper = ({
   useEffect(() => {
     setIsDisabled(false)
   }, [statusName])
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const res = await fetch("/api/theme", { cache: "no-store" })
+        const data = await res.json()
+        if (res.ok && data.theme) {
+          if (typeof data.theme.backgroundUrl === "string") {
+            setBackground(data.theme.backgroundUrl || null)
+          }
+          if (typeof data.theme.brandName === "string") {
+            setBrandName(data.theme.brandName)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load theme", error)
+      }
+    }
+
+    loadTheme()
+  }, [setBackground, setBrandName])
 
   const handleNext = () => {
     setIsDisabled(true)
@@ -87,6 +108,12 @@ const GameWrapper = ({
                 {`${questionStates.current} / ${questionStates.total}`}
               </div>
             )}
+
+            <div className="flex flex-1 items-center justify-center">
+              <span className="rounded-md bg-white/90 px-3 py-1 text-sm font-semibold text-gray-800 shadow">
+                {brandName}
+              </span>
+            </div>
 
             {manager && next && (
               <Button
