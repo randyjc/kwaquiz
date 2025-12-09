@@ -27,7 +27,8 @@ const ManagerPassword = ({ onSubmit }: Props) => {
   })
 
   return (
-    <Form className="w-full max-w-xl">
+    <div className="w-full max-w-xl">
+      <Form>
       <Input
         type="password"
         onChange={(e) => setPassword(e.target.value)}
@@ -35,7 +36,8 @@ const ManagerPassword = ({ onSubmit }: Props) => {
         placeholder="Manager password"
       />
       <Button onClick={handleSubmit}>Submit</Button>
-    </Form>
+      </Form>
+    </div>
   )
 }
 
