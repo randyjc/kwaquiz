@@ -5,6 +5,7 @@ import { STATUS } from "@rahoot/common/types/game/status"
 import ManagerPassword from "@rahoot/web/components/game/create/ManagerPassword"
 import QuizEditor from "@rahoot/web/components/game/create/QuizEditor"
 import MediaLibrary from "@rahoot/web/components/game/create/MediaLibrary"
+import ThemeEditor from "@rahoot/web/components/game/create/ThemeEditor"
 import SelectQuizz from "@rahoot/web/components/game/create/SelectQuizz"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { useManagerStore } from "@rahoot/web/stores/manager"
@@ -20,6 +21,7 @@ const Manager = () => {
   const [quizzList, setQuizzList] = useState<QuizzWithId[]>([])
   const [showEditor, setShowEditor] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
+  const [showTheme, setShowTheme] = useState(false)
 
   useEvent("manager:quizzList", (quizzList) => {
     setIsAuth(true)
@@ -69,12 +71,17 @@ const Manager = () => {
     )
   }
 
+  if (showTheme) {
+    return <ThemeEditor onBack={() => setShowTheme(false)} />
+  }
+
   return (
     <SelectQuizz
       quizzList={quizzList}
       onSelect={handleCreate}
       onManage={() => setShowEditor(true)}
       onMedia={() => setShowMedia(true)}
+      onTheme={() => setShowTheme(true)}
     />
   )
 }

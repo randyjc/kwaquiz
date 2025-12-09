@@ -9,9 +9,16 @@ type Props = {
   onSelect: (_id: string) => void
   onManage?: () => void
   onMedia?: () => void
+  onTheme?: () => void
 }
 
-const SelectQuizz = ({ quizzList, onSelect, onManage, onMedia }: Props) => {
+const SelectQuizz = ({
+  quizzList,
+  onSelect,
+  onManage,
+  onMedia,
+  onTheme,
+}: Props) => {
   const [selected, setSelected] = useState<string | null>(null)
 
   const handleSelect = (id: string) => () => {
@@ -43,6 +50,14 @@ const SelectQuizz = ({ quizzList, onSelect, onManage, onMedia }: Props) => {
               onClick={onMedia}
             >
               Media
+            </button>
+          )}
+          {onTheme && (
+            <button
+              className="text-sm font-semibold text-amber-700 underline"
+              onClick={onTheme}
+            >
+              Theme
             </button>
           )}
           {onManage && (

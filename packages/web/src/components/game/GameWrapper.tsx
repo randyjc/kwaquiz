@@ -7,9 +7,9 @@ import Loader from "@rahoot/web/components/Loader"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { usePlayerStore } from "@rahoot/web/stores/player"
 import { useQuestionStore } from "@rahoot/web/stores/question"
+import { useThemeStore } from "@rahoot/web/stores/theme"
 import { MANAGER_SKIP_BTN } from "@rahoot/web/utils/constants"
 import clsx from "clsx"
-import Image from "next/image"
 import { PropsWithChildren, useEffect, useState } from "react"
 
 type Props = PropsWithChildren & {
@@ -37,6 +37,7 @@ const GameWrapper = ({
   const { isConnected } = useSocket()
   const { player } = usePlayerStore()
   const { questionStates, setQuestionStates } = useQuestionStore()
+  const { backgroundUrl } = useThemeStore()
   const [isDisabled, setIsDisabled] = useState(false)
   const next = statusName ? MANAGER_SKIP_BTN[statusName] : null
 
@@ -56,14 +57,21 @@ const GameWrapper = ({
     onNext?.()
   }
 
+  const resolvedBackground = backgroundUrl || background.src
+
   return (
     <section className="relative flex min-h-screen w-full flex-col justify-between">
-      <div className="fixed top-0 left-0 -z-10 h-full w-full bg-orange-600 opacity-70">
-        <Image
-          className="pointer-events-none h-full w-full object-cover opacity-60"
-          src={background}
-          alt="background"
-        />
+      <div
+        className="fixed top-0 left-0 -z-10 h-full w-full bg-orange-600 opacity-70"
+        style={{
+          backgroundImage: `url(${resolvedBackground})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          opacity: 0.7,
+        }}
+      >
+        <div className="h-full w-full bg-black/10" />
       </div>
 
       {!isConnected && !statusName ? (
