@@ -10,6 +10,8 @@ type Props = {
   onManage?: () => void
   onMedia?: () => void
   onTheme?: () => void
+  resumeGameId?: string | null
+  onResume?: () => void
 }
 
 const SelectQuizz = ({
@@ -18,6 +20,8 @@ const SelectQuizz = ({
   onManage,
   onMedia,
   onTheme,
+  resumeGameId,
+  onResume,
 }: Props) => {
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -44,6 +48,14 @@ const SelectQuizz = ({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Select a quizz</h1>
         <div className="flex items-center gap-2">
+          {resumeGameId && onResume && (
+            <button
+              className="rounded-md bg-amber-500 px-3 py-1 text-sm font-semibold text-white shadow"
+              onClick={onResume}
+            >
+              Resume game
+            </button>
+          )}
           {onMedia && (
             <button
               className="text-sm font-semibold text-gray-700 underline"

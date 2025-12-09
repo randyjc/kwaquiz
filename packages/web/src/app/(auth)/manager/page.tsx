@@ -11,7 +11,7 @@ import Button from "@rahoot/web/components/Button"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { useManagerStore } from "@rahoot/web/stores/manager"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const Manager = () => {
   const { gameId, setGameId, setStatus } = useManagerStore()
@@ -23,6 +23,7 @@ const Manager = () => {
   const [showEditor, setShowEditor] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
   const [showTheme, setShowTheme] = useState(false)
+  const [resumeGameId, setResumeGameId] = useState<string | null>(null)
 
   useEvent("manager:quizzList", (quizzList) => {
     setIsAuth(true)
@@ -32,8 +33,19 @@ const Manager = () => {
   useEvent("manager:gameCreated", ({ gameId, inviteCode }) => {
     setGameId(gameId)
     setStatus(STATUS.SHOW_ROOM, { text: "Waiting for the players", inviteCode })
+    setResumeGameId(gameId)
     router.push(`/game/manager/${gameId}`)
   })
+
+  useEvent(
+    "manager:successReconnect",
+    ({ gameId, status, players, currentQuestion }) => {
+      setGameId(gameId)
+      setStatus(status.name, status.data)
+      setResumeGameId(gameId)
+      router.push(`/game/manager/${gameId}`)
+    },
+  )
 
   const handleAuth = (password: string) => {
     socket?.emit("manager:auth", password)
@@ -45,6 +57,20 @@ const Manager = () => {
     if (!gameId) return
     socket?.emit("manager:setBreak", { gameId, active })
   }
+
+  const handleResume = () => {
+    if (!resumeGameId) return
+    socket?.emit("manager:reconnect", { gameId: resumeGameId })
+  }
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("last_manager_game_id")
+      if (stored) {
+        setResumeGameId(stored)
+      }
+    } catch {}
+  }, [])
 
   if (!isAuth) {
     return <ManagerPassword onSubmit={handleAuth} />
@@ -90,6 +116,8 @@ const Manager = () => {
       onManage={() => setShowEditor(true)}
       onMedia={() => setShowMedia(true)}
       onTheme={() => setShowTheme(true)}
+      resumeGameId={resumeGameId}
+      onResume={handleResume}
     />
   )
 }

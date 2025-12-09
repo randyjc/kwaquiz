@@ -25,7 +25,16 @@ const initialState = {
 export const useManagerStore = create<ManagerStore<StatusDataMap>>((set) => ({
   ...initialState,
 
-  setGameId: (gameId) => set({ gameId }),
+  setGameId: (gameId) => {
+    try {
+      if (gameId) {
+        localStorage.setItem("last_manager_game_id", gameId)
+      } else {
+        localStorage.removeItem("last_manager_game_id")
+      }
+    } catch {}
+    set({ gameId })
+  },
 
   setStatus: (name, data) => set({ status: createStatus(name, data) }),
   resetStatus: () => set({ status: null }),
@@ -35,5 +44,10 @@ export const useManagerStore = create<ManagerStore<StatusDataMap>>((set) => ({
       players: typeof players === "function" ? players(state.players) : players,
     })),
 
-  reset: () => set(initialState),
+  reset: () => {
+    try {
+      localStorage.removeItem("last_manager_game_id")
+    } catch {}
+    set(initialState)
+  },
 }))
