@@ -14,14 +14,16 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
   }, [connect, isConnected])
 
   const Shell = ({ children: inner }: PropsWithChildren) => (
-    <section className="relative flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
+    <section className="relative flex min-h-screen flex-col items-center justify-center px-4 text-center">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="bg-primary/15 absolute -top-[15vmin] -left-[15vmin] min-h-[75vmin] min-w-[75vmin] rounded-full" />
         <div className="bg-primary/15 absolute -right-[15vmin] -bottom-[15vmin] min-h-[75vmin] min-w-[75vmin] rotate-45" />
       </div>
 
-      <BrandHeading size="lg" />
-      {inner}
+      <div className="z-10 flex w-full max-w-xl flex-col items-center gap-5">
+        <BrandHeading size="md" />
+        {inner}
+      </div>
     </section>
   )
 
