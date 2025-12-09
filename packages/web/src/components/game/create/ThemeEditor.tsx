@@ -24,6 +24,8 @@ const ThemeEditor = ({ onBack }: Props) => {
   const [customUrl, setCustomUrl] = useState("")
   const [items, setItems] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const previewUrl = useMemo(
     () => backgroundUrl || customUrl || background.src,
@@ -59,6 +61,34 @@ const ThemeEditor = ({ onBack }: Props) => {
   const handleApplyCustom = () => {
     if (!customUrl.trim()) return
     handleSet(customUrl.trim())
+  }
+
+  const handleUpload = async (file?: File | null) => {
+    if (!file) return
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: form,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed")
+      }
+      if (data.media?.url) {
+        handleSet(data.media.url)
+        setCustomUrl(data.media.url)
+      }
+      load()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Upload failed"
+      setUploadError(message)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleReset = () => {
@@ -117,15 +147,34 @@ const ThemeEditor = ({ onBack }: Props) => {
         </div>
 
         <div className="space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Images from media library</h3>
-              <p className="text-sm text-gray-500">Pick any uploaded image as the background.</p>
-            </div>
-            <Button className="bg-gray-700" onClick={load} disabled={loading}>
-              {loading ? "Refreshing..." : "Refresh"}
-            </Button>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">Images from media library</h3>
+            <p className="text-sm text-gray-500">Pick any uploaded image as the background.</p>
           </div>
+          <Button className="bg-gray-700" onClick={load} disabled={loading}>
+            {loading ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+
+        <div className="rounded-md border border-dashed border-gray-300 p-3">
+          <label className="flex items-center gap-3 text-sm font-semibold text-gray-800">
+            <input
+              type="file"
+              accept="image/*"
+              className="text-sm"
+              onChange={(e) => handleUpload(e.target.files?.[0])}
+              disabled={uploading}
+            />
+            {uploading ? "Uploading..." : "Upload image"}
+          </label>
+          <p className="mt-1 text-xs text-gray-500">
+            Upload a background image (webp/png/jpg). It will be available immediately and selected as the current background.
+          </p>
+          {uploadError && (
+            <p className="mt-1 text-xs font-semibold text-red-600">{uploadError}</p>
+          )}
+        </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             {items.map((item) => (
