@@ -460,7 +460,7 @@ const QuizEditor = ({ quizzList, onBack, onListUpdate }: Props) => {
   }, [quizzList, selectedId])
 
   return (
-    <div className="flex w-full max-w-7xl flex-col gap-6 rounded-md bg-white p-5 shadow-sm md:gap-7 md:p-6 lg:max-w-8xl lg:p-8">
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-7 rounded-md bg-white p-6 shadow-sm md:p-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button onClick={onBack} className="bg-gray-700">
