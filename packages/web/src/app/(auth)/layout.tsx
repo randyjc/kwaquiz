@@ -20,9 +20,9 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
         <div className="bg-primary/15 absolute -right-[15vmin] -bottom-[15vmin] min-h-[75vmin] min-w-[75vmin] rotate-45" />
       </div>
 
-      <div className="z-10 flex w-full max-w-xl flex-col items-center gap-8">
+      <div className="z-10 flex w-full flex-col items-center gap-8 px-4">
         <BrandHeading size="md" />
-        {inner}
+        <div className="flex w-full justify-center">{inner}</div>
       </div>
     </section>
   )
