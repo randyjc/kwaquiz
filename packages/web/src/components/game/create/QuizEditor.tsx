@@ -13,6 +13,7 @@ type Props = {
   onBack: () => void
   onListUpdate: (_quizz: QuizzWithId[]) => void
   onBreakToggle?: (_active: boolean) => void
+  gameId?: string | null
 }
 
 type EditableQuestion = QuizzWithId["questions"][number]
@@ -56,7 +57,13 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value >= 10 || value % 1 === 0 ? 0 : 1)} ${units[i]}`
 }
 
-const QuizEditor = ({ quizzList, onBack, onListUpdate, onBreakToggle }: Props) => {
+const QuizEditor = ({
+  quizzList,
+  onBack,
+  onListUpdate,
+  onBreakToggle,
+  gameId,
+}: Props) => {
   const { socket } = useSocket()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<QuizzWithId | null>(null)
@@ -475,7 +482,7 @@ const QuizEditor = ({ quizzList, onBack, onListUpdate, onBreakToggle }: Props) =
               Delete quiz
             </Button>
           )}
-          {onBreakToggle && (
+          {onBreakToggle && gameId && (
             <>
               <Button className="bg-amber-500" onClick={() => onBreakToggle(true)}>
                 Break

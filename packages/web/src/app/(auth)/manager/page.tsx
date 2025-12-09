@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 const Manager = () => {
-  const { setGameId, setStatus } = useManagerStore()
+  const { gameId, setGameId, setStatus } = useManagerStore()
   const router = useRouter()
   const { socket } = useSocket()
 
@@ -42,7 +42,8 @@ const Manager = () => {
     socket?.emit("game:create", quizzId)
   }
   const handleBreakToggle = (active: boolean) => {
-    socket?.emit("manager:setBreak", { gameId: null, active })
+    if (!gameId) return
+    socket?.emit("manager:setBreak", { gameId, active })
   }
 
   if (!isAuth) {
@@ -56,6 +57,7 @@ const Manager = () => {
         onBack={() => setShowEditor(false)}
         onListUpdate={setQuizzList}
         onBreakToggle={handleBreakToggle}
+        gameId={gameId}
       />
     )
   }
