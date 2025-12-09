@@ -1,7 +1,6 @@
 <div align="center">
   <h1>KwaQuiz</h1>
   <p>A self-hosted quiz platform for live events, inspired by the original <a href="https://github.com/Ralex91/Rahoot">Rahoot</a> project.</p>
-  <p><strong>Demo/brand:</strong> <a href="https://kwaquiz.com">kwaquiz.com</a></p>
 </div>
 
 ## What is KwaQuiz?
@@ -15,7 +14,6 @@ KwaQuiz lets you run live quiz shows from your own server. The manager screen co
 - **Timing tools**: manual “set timing from media” to align cooldown/answer time to clip length.
 - **Gameplay controls**: pause/resume, break/resume game, skip intros, end game, show leaderboard.
 - **Resilience**: Redis snapshots keep game state; players/managers reconnect and resume without losing score; username/points hydrate from local storage.
-- **Multi-answer support**: questions can have multiple correct answers with proper scoring.
 - **Player list**: see connected/disconnected players; reconnect tracking persists across sessions.
 - **Branding & themes**: customize brand name and background in the Theme editor.
 - **Image zoom**: click to enlarge question images.
@@ -94,4 +92,4 @@ pnpm --filter @rahoot/web dev      # web on 3000
 ## Support / Issues
 
 - Open issues on this repo: <https://github.com/randyjc/kwaquiz/issues>
-- Feature ideas/bugs welcome. দু
+- Feature ideas/bugs welcome.
