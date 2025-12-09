@@ -24,6 +24,7 @@ const Responses = ({
   const [percentages, setPercentages] = useState<Record<string, string>>({})
   const [isMusicPlaying, setIsMusicPlaying] = useState(false)
   const [isMediaPlaying, setIsMediaPlaying] = useState(false)
+  const correctSet = Array.isArray(correct) ? correct : [correct]
 
   const [sfxResults] = useSound(SFX_RESULTS_SOUND, {
     volume: 0.2,
@@ -81,39 +82,87 @@ const Responses = ({
         />
 
         <div
-          className={`mt-8 grid h-40 w-full max-w-3xl gap-4 px-2`}
+          className={`mt-8 grid h-48 w-full max-w-5xl gap-4 px-2`}
           style={{ gridTemplateColumns: `repeat(${answers.length}, 1fr)` }}
         >
-          {answers.map((_, key) => (
-            <div
-              key={key}
-              className={clsx(
-                "flex flex-col justify-end self-end overflow-hidden rounded-md",
-                ANSWERS_COLORS[key],
-              )}
-              style={{ height: percentages[key] }}
-            >
-              <span className="w-full bg-black/10 text-center text-lg font-bold text-white drop-shadow-md">
-                {responses[key] || 0}
-              </span>
-            </div>
-          ))}
+          {answers.map((label, key) => {
+            const votes = responses[key] || 0
+            const percent = percentages[key] || "0%"
+            const isCorrect = correctSet.includes(key)
+
+            return (
+              <div
+                key={key}
+                className={clsx(
+                  "relative flex flex-col justify-end self-end overflow-hidden rounded-md border shadow",
+                  isCorrect ? "border-green-400 ring-4 ring-green-300/50" : "border-white/40",
+                  ANSWERS_COLORS[key],
+                )}
+                style={{ height: percent }}
+                title={label}
+              >
+                <div className="absolute inset-0 bg-black/20" />
+                <div className="relative flex w-full flex-col items-center gap-1 bg-black/25 px-2 py-2 text-white">
+                  <span className="text-sm font-semibold">{label}</span>
+                  <span className="text-lg font-bold">{votes} ({percent})</span>
+                  <span
+                    className={clsx(
+                      "rounded-full px-3 py-0.5 text-xs font-bold uppercase",
+                      isCorrect ? "bg-green-500 text-white" : "bg-black/40 text-white",
+                    )}
+                  >
+                    {isCorrect ? "Correct" : "Not correct"}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
       <div>
-        <div className="mx-auto mb-4 grid w-full max-w-7xl grid-cols-2 gap-1 rounded-full px-2 text-lg font-bold text-white md:text-xl">
-          {answers.map((answer, key) => (
-            <AnswerButton
-              key={key}
-              className={clsx(ANSWERS_COLORS[key], {
-                "opacity-65": responses && correct !== key,
-              })}
-              icon={ANSWERS_ICONS[key]}
-            >
-              {answer}
-            </AnswerButton>
-          ))}
+        <div className="mx-auto mb-6 grid w-full max-w-7xl grid-cols-2 gap-2 px-2 text-lg font-bold text-white md:text-xl">
+          {answers.map((answer, key) => {
+            const votes = responses[key] || 0
+            const totalVotes = Object.values(responses).reduce(
+              (acc, val) => acc + (val || 0),
+              0,
+            )
+            const percent = totalVotes ? Math.round((votes / totalVotes) * 100) : 0
+            const isCorrect = correctSet.includes(key)
+
+            return (
+              <div key={key} className="flex flex-col gap-2 rounded-md bg-white/10 p-2 shadow">
+                <AnswerButton
+                  className={clsx(
+                    ANSWERS_COLORS[key],
+                    "w-full justify-between",
+                    !isCorrect && "opacity-70",
+                  )}
+                  icon={ANSWERS_ICONS[key]}
+                >
+                  <span>{answer}</span>
+                  <span
+                    className={clsx(
+                      "rounded-full px-3 py-0.5 text-sm font-bold",
+                      isCorrect ? "bg-green-500 text-white" : "bg-black/30 text-white",
+                    )}
+                  >
+                    {isCorrect ? "Correct" : "Wrong"}
+                  </span>
+                </AnswerButton>
+                <div className="flex items-center justify-between text-sm text-gray-100">
+                  <span>
+                    Votes: <strong>{votes}</strong>
+                  </span>
+                  <span>
+                    {percent}
+                    %
+                  </span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
