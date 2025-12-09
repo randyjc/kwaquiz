@@ -1,110 +1,67 @@
-<p align="center">
-  <img width="450" height="120" align="center" src="https://raw.githubusercontent.com/Ralex91/Rahoot/main/.github/logo.svg">
-  <br>
-  <div align="center">
-    <img alt="Visitor Badge" src="https://api.visitorbadge.io/api/visitors?path=https://github.com/Ralex91/Rahoot/edit/main/README.md&countColor=%2337d67a">
-    <img src="https://img.shields.io/docker/pulls/ralex91/rahoot?style=for-the-badge&color=37d67a" alt="Docker Pulls">
-  </div>
-</p>
+<div align="center">
+  <h1>KwaQuiz</h1>
+  <p>A self-hosted quiz platform for live events, inspired by the original <a href="https://github.com/Ralex91/Rahoot">Rahoot</a> project.</p>
+  <p><strong>Demo/brand:</strong> <a href="https://kwaquiz.com">kwaquiz.com</a></p>
+</div>
 
-## 🧩 What is this project?
+## What is KwaQuiz?
 
-Rahoot is a straightforward and open-source clone of the Kahoot! platform, allowing users to host it on their own server for smaller events.
+KwaQuiz lets you run live quiz shows from your own server. The manager screen controls the flow (start, skip, pause/break, resume), and players join from their devices. Media (images/audio/video) is hosted locally so redeploys don’t wipe questions.
 
-> ⚠️ This project is still under development, please report any bugs or suggestions in the [issues](https://github.com/Ralex91/Rahoot/issues)
+## What’s included
 
-<p align="center">
-  <img width="30%" src="https://raw.githubusercontent.com/Ralex91/Rahoot/main/.github/preview1.jpg" alt="Login">
-  <img width="30%" src="https://raw.githubusercontent.com/Ralex91/Rahoot/main/.github/preview2.jpg" alt="Manager Dashboard">
-  <img width="30%" src="https://raw.githubusercontent.com/Ralex91/Rahoot/main/.github/preview3.jpg" alt="Question Screen">
-</p>
+- **Quiz editor**: create/edit quizzes in the UI, delete quizzes, upload media per question.
+- **Media library**: browse uploads, see usage, delete unused files.
+- **Timing tools**: manual “set timing from media” to align cooldown/answer time to clip length.
+- **Gameplay controls**: pause/resume, break/resume game, skip intros, end game, show leaderboard.
+- **Resilience**: Redis snapshots keep game state; players/managers reconnect and resume without losing score; username/points hydrate from local storage.
+- **Multi-answer support**: questions can have multiple correct answers with proper scoring.
+- **Player list**: see connected/disconnected players; reconnect tracking persists across sessions.
+- **Branding & themes**: customize brand name and background in the Theme editor.
+- **Image zoom**: click to enlarge question images.
 
-## ⚙️ Prerequisites
+## Credits
 
-Choose one of the following deployment methods:
+- Original project: [Ralex91/Rahoot](https://github.com/Ralex91/Rahoot) (MIT).
+- KwaQuiz is a customized fork; attribution retained under MIT.
 
-### Without Docker
+## Quick start
 
-- Node.js : version 20 or higher
-- PNPM : Learn more about [here](https://pnpm.io/)
+### Docker (build locally)
 
-### With Docker
-
-- Docker and Docker Compose
-
-## 📖 Getting Started
-
-Choose your deployment method:
-
-### 🐳 Using Docker (Recommended)
-
-Using Docker Compose (recommended):
-You can find the docker compose configuration in the repository:
-[docker-compose.yml](/compose.yml)
-
+Use the provided `compose.yml` to run web + socket + Redis (adjust image name as needed):
 ```bash
 docker compose up -d
 ```
 
-Or using Docker directly:
-
+Or build your own image from this repo:
 ```bash
+docker build -t kwaquiz:latest .
 docker run -d \
-  -p 3000:3000 \
-  -p 3001:3001 \
-  -v ./config:/app/config \
-  -e REDIS_URL=redis://user:pass@redis:6379 \
+  -p 3000:3000 -p 3001:3001 \
+  -v $(pwd)/config:/app/config \
+  -e REDIS_URL=redis://localhost:6379 \
   -e MEDIA_MAX_UPLOAD_MB=200 \
   -e WEB_ORIGIN=http://localhost:3000 \
   -e SOCKET_URL=http://localhost:3001 \
-  ralex91/rahoot:latest
+  kwaquiz:latest
 ```
 
-**Configuration & Media Volume:**
-- `-v ./config:/app/config` mounts a local `config` folder to persist settings, quizzes, and uploaded media (`config/quizz`, `config/media`). This keeps your data across redeploys and lets you back it up easily.
-- The folder is auto-created on first run with an example quiz.
-
-The application will be available at:
-
-- Web Interface: http://localhost:3000
-- WebSocket Server: ws://localhost:3001
-
-### 🛠️ Without Docker
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/Ralex91/Rahoot.git
-cd ./Rahoot
-```
-
-2. Install dependencies:
+### Local dev
 
 ```bash
 pnpm install
+pnpm --filter @rahoot/socket dev   # socket server on 3001
+pnpm --filter @rahoot/web dev      # web on 3000
 ```
 
-3. Change the environment variables in the `.env` file
+## Configuration & persistence
 
-4. Build and start the application:
+- Config, quizzes, and media live under `config/` (`config/game.json`, `config/quizz`, `config/media`). Mount `config/` as a volume so redeploys keep data.
+- Redis (`REDIS_URL`) stores game snapshots so reconnect/resume works.
+- Upload size: `MEDIA_MAX_UPLOAD_MB` (default 50MB).
 
-```bash
-# Development mode
-pnpm run dev
-
-# Production mode
-pnpm run build
-pnpm start
-```
-
-## ⚙️ Configuration
-
-The configuration is split into two main parts:
-
-### 1. Game Configuration (`config/game.json`)
-
-Main game settings:
-
+### config/game.json
 ```json
 {
   "managerPassword": "PASSWORD",
@@ -112,79 +69,29 @@ Main game settings:
 }
 ```
 
-Options:
+### Quizzes (UI or files)
+- Manage via the in-app editor (`/manager`) or drop JSON in `config/quizz/`.
+- Questions support `media` `{type:"image"|"audio"|"video", url:"..."}` and multiple correct answers (`solution` can be a number or an array).
 
-- `managerPassword`: The master password for accessing the manager interface
-- `music`: Enable/disable game music
+## Gameplay flow
 
-### 2. Quiz Configuration (`config/quizz/*.json`)
+1) Go to `/manager`, enter the manager password.
+2) Create or pick a quiz; upload media as needed.
+3) Start game; players join via the invite code.
+4) Use controls: pause/resume timers, break/resume the whole game, skip intros, show leaderboard, end game.
+5) Players/manager can reconnect and resume with scores intact (thanks to Redis snapshots + local hydration).
 
-Create your quiz files in the `config/quizz/` directory. You can have multiple quiz files and select which one to use when starting a game.
+## Theming/branding
 
-Example quiz configuration (`config/quizz/example.json`):
+- Theme editor (manager): set brand name and background image (uploads supported).
+- Page title and login screens reflect your brand.
 
-```json
-{
-  "subject": "Example Quiz",
-  "questions": [
-    {
-      "question": "What is the correct answer?",
-      "answers": ["No", "Yes", "No", "No"],
-      "image": "https://images.unsplash.com/....",
-      "media": { "type": "audio", "url": "https://example.com/song.mp3" },
-      "solution": 1,
-      "cooldown": 5,
-      "time": 15
-    }
-  ]
-}
-```
+## Notes on forking & license
 
-Quiz Options:
+- MIT license retained; original copyright belongs to the Rahoot authors.
+- You’re free to brand/deploy as KwaQuiz; please keep attribution in LICENSE/README.
 
-- `subject`: Title/topic of the quiz
-- `questions`: Array of question objects containing:
-  - `question`: The question text
-  - `answers`: Array of possible answers (2-4 options)
-  - `image`: Optional URL for question image (legacy; use `media` for new content)
-- `media`: Optional media attachment `{ "type": "image" | "audio" | "video", "url": "<link>" }`. Examples:
-    - `{"type":"audio","url":"https://.../clip.mp3"}`
-    - `{"type":"video","url":"https://.../clip.mp4"}`
-  - `solution`: Index of correct answer (0-based)
-  - `cooldown`: Time in seconds before showing the question
-  - `time`: Time in seconds allowed to answer
+## Support / Issues
 
-Tip: You can now create and edit quizzes directly from the Manager UI (login at `/manager` and click “Manage”).
-
-### Manager Features
-- Upload image/audio/video directly in the quiz editor (stored under `config/media`).
-- Manual “Set timing from media” to align cooldown/answer time with clip length.
-- Media library view: see all uploads, where they’re used, and delete unused files.
-- Delete quizzes from the editor.
-- Pause/Resume/Break/Skip question intro and answer timers; End Game button to reset everyone.
-- Player list in manager view showing connected/disconnected players (persists across reconnects); resume a game from where it left off.
-- Click-to-zoom images during questions.
-- Player reconnect resilience: Redis snapshotting keeps game state; clients auto-rejoin using stored `clientId`/last game; username/points are hydrated locally after refresh without a manual reload.
-
-### Resilience & Persistence
-- Redis snapshotting (set `REDIS_URL`, e.g., `redis://:password@redis:6379`) keeps game state so managers/players can reconnect without losing progress.
-- Client auto-reconnects using stored `clientId` and last `gameId`; state resumes after refresh/tab close if the game still exists.
-- `MEDIA_MAX_UPLOAD_MB` env controls upload size limit (default 50MB; set higher for video).
-
-## 🎮 How to Play
-
-1. Access the manager interface at http://localhost:3000/manager
-2. Enter the manager password (defined in quiz config)
-3. Share the game URL (http://localhost:3000) and room code with participants
-4. Wait for players to join
-5. Click the start button to begin the game
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a new branch (e.g., `feat/my-feature`)
-3. Make your changes
-4. Create a pull request
-5. Wait for review and merge
-
-For bug reports or feature requests, please [create an issue](https://github.com/Ralex91/Rahoot/issues).
+- Open issues on this repo: <https://github.com/randyjc/kwaquiz/issues>
+- Feature ideas/bugs welcome. দু
