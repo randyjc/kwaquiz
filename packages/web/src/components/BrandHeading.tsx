@@ -5,17 +5,27 @@ import clsx from "clsx"
 
 type Props = {
   className?: string
+  size?: "md" | "lg"
 }
 
-const BrandHeading = ({ className }: Props) => {
+const BrandHeading = ({ className, size = "lg" }: Props) => {
   const { brandName } = useThemeStore()
   const label = brandName || "Rahoot!"
 
+  const sizeClass =
+    size === "lg"
+      ? "text-4xl md:text-5xl"
+      : "text-2xl md:text-3xl"
+
   return (
-    <div className={clsx("text-center", className)}>
-      <div className="inline-flex rounded-md bg-white/90 px-4 py-2 text-3xl font-black text-[#f7931e] shadow-sm">
-        {label}
-      </div>
+    <div
+      className={clsx(
+        "text-center font-black tracking-tight text-[#f7931e] drop-shadow-lg",
+        sizeClass,
+        className,
+      )}
+    >
+      {label}
     </div>
   )
 }
