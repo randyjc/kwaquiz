@@ -46,6 +46,7 @@ class Game {
     timer: NodeJS.Timeout | null
     resolve: (() => void) | null
   }
+  breakActive: boolean
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -84,6 +85,7 @@ class Game {
       timer: null,
       resolve: null,
     }
+    this.breakActive = false
 
     const roomInvite = createInviteCode()
     this.inviteCode = roomInvite
@@ -137,6 +139,7 @@ class Game {
       timer: null,
       resolve: null,
     }
+    game.breakActive = snapshot.breakActive || false
 
     if (game.cooldown.active && game.cooldown.remaining > 0 && !game.cooldown.paused) {
       game.startCooldown(game.cooldown.remaining)
@@ -193,6 +196,7 @@ class Game {
         paused: this.cooldown.paused,
         remaining: this.cooldown.remaining,
       },
+      breakActive: this.breakActive,
     }
   }
 
@@ -450,6 +454,27 @@ class Game {
 
     this.cooldown.paused = false
     this.io.to(this.gameId).emit("game:cooldownPause", false)
+    this.persist()
+  }
+
+  setBreak(socket: Socket, active: boolean) {
+    if (this.manager.id !== socket.id) {
+      return
+    }
+
+    this.breakActive = active
+
+    if (this.cooldown.active) {
+      if (active) {
+        this.cooldown.paused = true
+      } else {
+        this.cooldown.paused = false
+      }
+      this.io.to(this.gameId).emit("game:cooldownPause", this.cooldown.paused)
+    }
+
+    this.io.to(this.gameId).emit("game:break", active)
+    this.io.to(this.manager.id).emit("manager:break", active)
     this.persist()
   }
 

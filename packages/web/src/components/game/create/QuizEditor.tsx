@@ -12,6 +12,7 @@ type Props = {
   quizzList: QuizzWithId[]
   onBack: () => void
   onListUpdate: (_quizz: QuizzWithId[]) => void
+  onBreakToggle?: (_active: boolean) => void
 }
 
 type EditableQuestion = QuizzWithId["questions"][number]
@@ -55,7 +56,7 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value >= 10 || value % 1 === 0 ? 0 : 1)} ${units[i]}`
 }
 
-const QuizEditor = ({ quizzList, onBack, onListUpdate }: Props) => {
+const QuizEditor = ({ quizzList, onBack, onListUpdate, onBreakToggle }: Props) => {
   const { socket } = useSocket()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<QuizzWithId | null>(null)
@@ -462,19 +463,29 @@ const QuizEditor = ({ quizzList, onBack, onListUpdate }: Props) => {
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-7 rounded-md bg-white p-6 shadow-sm md:p-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button onClick={onBack} className="bg-gray-700">
-              Back
+        <div className="flex items-center gap-2">
+          <Button onClick={onBack} className="bg-gray-700">
+            Back
+          </Button>
+          <Button onClick={handleNew} className="bg-blue-600">
+            New quiz
+          </Button>
+          {selectedId && (
+            <Button className="bg-red-600" onClick={handleDeleteQuizz} disabled={saving}>
+              Delete quiz
             </Button>
-            <Button onClick={handleNew} className="bg-blue-600">
-              New quiz
-            </Button>
-            {selectedId && (
-              <Button className="bg-red-600" onClick={handleDeleteQuizz} disabled={saving}>
-                Delete quiz
+          )}
+          {onBreakToggle && (
+            <>
+              <Button className="bg-amber-500" onClick={() => onBreakToggle(true)}>
+                Break
               </Button>
-            )}
-          </div>
+              <Button className="bg-green-600" onClick={() => onBreakToggle(false)}>
+                Resume
+              </Button>
+            </>
+          )}
+        </div>
 
         <Button onClick={handleSave} disabled={saving || loading}>
           {saving ? "Saving..." : "Save quiz"}

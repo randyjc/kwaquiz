@@ -41,6 +41,9 @@ const Manager = () => {
   const handleCreate = (quizzId: string) => {
     socket?.emit("game:create", quizzId)
   }
+  const handleBreakToggle = (active: boolean) => {
+    socket?.emit("manager:setBreak", { gameId: null, active })
+  }
 
   if (!isAuth) {
     return <ManagerPassword onSubmit={handleAuth} />
@@ -52,6 +55,7 @@ const Manager = () => {
         quizzList={quizzList}
         onBack={() => setShowEditor(false)}
         onListUpdate={setQuizzList}
+        onBreakToggle={handleBreakToggle}
       />
     )
   }

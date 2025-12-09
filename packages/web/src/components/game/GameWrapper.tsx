@@ -39,6 +39,7 @@ const GameWrapper = ({
   const { questionStates, setQuestionStates } = useQuestionStore()
   const { backgroundUrl, setBackground, setBrandName } = useThemeStore()
   const [isDisabled, setIsDisabled] = useState(false)
+  const [onBreak, setOnBreak] = useState(false)
   const next = statusName ? MANAGER_SKIP_BTN[statusName] : null
 
   useEvent("game:updateQuestion", ({ current, total }) => {
@@ -51,6 +52,9 @@ const GameWrapper = ({
   useEffect(() => {
     setIsDisabled(false)
   }, [statusName])
+
+  useEvent("game:break", (active) => setOnBreak(active))
+  useEvent("manager:break", (active) => setOnBreak(active))
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -168,6 +172,15 @@ const GameWrapper = ({
               <p className="text-gray-800">{player?.username}</p>
               <div className="rounded-sm bg-gray-800 px-3 py-1 text-lg">
                 {player?.points}
+              </div>
+            </div>
+          )}
+
+          {onBreak && (
+            <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+              <div className="rounded-md bg-white/90 px-6 py-4 text-center shadow-lg">
+                <p className="text-lg font-semibold text-gray-800">Game paused for a break</p>
+                <p className="text-sm text-gray-600">We&apos;ll resume from the same spot.</p>
               </div>
             </div>
           )}

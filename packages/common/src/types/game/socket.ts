@@ -35,6 +35,7 @@ export interface ServerToClientEvents {
   "game:reset": (_message: string) => void
   "game:updateQuestion": (_data: { current: number; total: number }) => void
   "game:playerAnswer": (_count: number) => void
+  "game:break": (_active: boolean) => void
 
   // Player events
   "player:successReconnect": (_data: {
@@ -66,6 +67,7 @@ export interface ServerToClientEvents {
   "manager:quizzLoaded": (_quizz: QuizzWithId) => void
   "manager:quizzSaved": (_quizz: QuizzWithId) => void
   "manager:quizzDeleted": (_id: string) => void
+  "manager:break": (_active: boolean) => void
 }
 
 export interface ClientToServerEvents {
@@ -78,6 +80,7 @@ export interface ClientToServerEvents {
   "manager:abortQuiz": (_message: MessageGameId) => void
   "manager:pauseCooldown": (_message: MessageGameId) => void
   "manager:resumeCooldown": (_message: MessageGameId) => void
+  "manager:setBreak": (_message: { gameId?: string; active: boolean }) => void
   "manager:endGame": (_message: MessageGameId) => void
   "manager:skipQuestionIntro": (_message: MessageGameId) => void
   "manager:nextQuestion": (_message: MessageGameId) => void
