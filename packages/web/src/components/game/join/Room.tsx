@@ -3,6 +3,7 @@ import Form from "@rahoot/web/components/Form"
 import Input from "@rahoot/web/components/Input"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { usePlayerStore } from "@rahoot/web/stores/player"
+import BrandShell from "@rahoot/web/components/game/join/BrandShell"
 import { KeyboardEvent, useState } from "react"
 
 const Room = () => {
@@ -25,14 +26,16 @@ const Room = () => {
   })
 
   return (
-    <Form>
+    <BrandShell>
+      <Form>
       <Input
         onChange={(e) => setInvitation(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="PIN Code here"
       />
       <Button onClick={handleJoin}>Submit</Button>
-    </Form>
+      </Form>
+    </BrandShell>
   )
 }
 

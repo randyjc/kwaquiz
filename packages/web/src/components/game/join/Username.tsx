@@ -4,6 +4,7 @@ import { STATUS } from "@rahoot/common/types/game/status"
 import Button from "@rahoot/web/components/Button"
 import Form from "@rahoot/web/components/Form"
 import Input from "@rahoot/web/components/Input"
+import BrandShell from "@rahoot/web/components/game/join/BrandShell"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { usePlayerStore } from "@rahoot/web/stores/player"
 
@@ -42,14 +43,16 @@ const Username = () => {
   })
 
   return (
-    <Form>
-      <Input
-        onChange={(e) => setUsername(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Username here"
-      />
-      <Button onClick={handleLogin}>Submit</Button>
-    </Form>
+    <BrandShell>
+      <Form>
+        <Input
+          onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Username here"
+        />
+        <Button onClick={handleLogin}>Submit</Button>
+      </Form>
+    </BrandShell>
   )
 }
 
