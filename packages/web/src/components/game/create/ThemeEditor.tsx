@@ -26,6 +26,9 @@ const ThemeEditor = ({ onBack }: Props) => {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [savingTheme, setSavingTheme] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [initializing, setInitializing] = useState(true)
 
   const previewUrl = useMemo(
     () => backgroundUrl || customUrl || background.src,
@@ -35,17 +38,36 @@ const ThemeEditor = ({ onBack }: Props) => {
   const load = async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/media", { cache: "no-store" })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to load media")
-      const onlyImages = (data.media || []).filter(
+      const [mediaRes, themeRes] = await Promise.all([
+        fetch("/api/media", { cache: "no-store" }),
+        fetch("/api/theme", { cache: "no-store" }),
+      ])
+
+      const mediaData = await mediaRes.json()
+      const themeData = await themeRes.json()
+
+      if (!mediaRes.ok) throw new Error(mediaData.error || "Failed to load media")
+      if (!themeRes.ok) throw new Error(themeData.error || "Failed to load theme")
+
+      const onlyImages = (mediaData.media || []).filter(
         (item: MediaItem) => item.mime?.startsWith("image/"),
       )
       setItems(onlyImages)
+
+      if (themeData.theme) {
+        if (typeof themeData.theme.backgroundUrl === "string") {
+          setBackground(themeData.theme.backgroundUrl || null)
+          setCustomUrl(themeData.theme.backgroundUrl || "")
+        }
+        if (typeof themeData.theme.brandName === "string") {
+          setBrandName(themeData.theme.brandName)
+        }
+      }
     } catch (error) {
       console.error(error)
     } finally {
       setLoading(false)
+      setInitializing(false)
     }
   }
 
@@ -53,9 +75,29 @@ const ThemeEditor = ({ onBack }: Props) => {
     load()
   }, [])
 
+  const persistTheme = async (next: { backgroundUrl?: string | null; brandName?: string }) => {
+    setSavingTheme(true)
+    setSaveError(null)
+    try {
+      const res = await fetch("/api/theme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save theme")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save theme"
+      setSaveError(message)
+    } finally {
+      setSavingTheme(false)
+    }
+  }
+
   const handleSet = (url: string) => {
     if (!url) return
     setBackground(url)
+    persistTheme({ backgroundUrl: url })
   }
 
   const handleApplyCustom = () => {
@@ -94,6 +136,7 @@ const ThemeEditor = ({ onBack }: Props) => {
   const handleReset = () => {
     reset()
     setCustomUrl("")
+    persistTheme({ backgroundUrl: null, brandName: "Rahoot" })
   }
 
   return (
@@ -121,7 +164,10 @@ const ThemeEditor = ({ onBack }: Props) => {
             </span>
             <input
               value={brandName}
-              onChange={(e) => setBrandName(e.target.value)}
+              onChange={(e) => {
+                setBrandName(e.target.value)
+                persistTheme({ brandName: e.target.value })
+              }}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
               placeholder="e.g., Kwalitaria Pub Quiz"
             />
@@ -195,6 +241,14 @@ const ThemeEditor = ({ onBack }: Props) => {
           </p>
           {uploadError && (
             <p className="mt-1 text-xs font-semibold text-red-600">{uploadError}</p>
+          )}
+          {saveError && (
+            <p className="mt-1 text-xs font-semibold text-red-600">{saveError}</p>
+          )}
+          {(savingTheme || initializing) && !uploading && (
+            <p className="mt-1 text-xs text-gray-500">
+              {initializing ? "Loading theme…" : "Saving theme…"}
+            </p>
           )}
         </div>
 

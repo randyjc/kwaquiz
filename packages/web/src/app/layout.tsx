@@ -1,5 +1,6 @@
 import Toaster from "@rahoot/web/components/Toaster"
 import BrandingHelmet from "@rahoot/web/components/BrandingHelmet"
+import ThemeHydrator from "@rahoot/web/components/ThemeHydrator"
 import { SocketProvider } from "@rahoot/web/contexts/socketProvider"
 import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
@@ -21,6 +22,7 @@ const RootLayout = ({ children }: PropsWithChildren) => (
     <body className={`${montserrat.variable} bg-secondary antialiased`}>
       <SocketProvider>
         <BrandingHelmet />
+        <ThemeHydrator />
         <main className="text-base-[8px] flex flex-col">{children}</main>
         <Toaster />
       </SocketProvider>

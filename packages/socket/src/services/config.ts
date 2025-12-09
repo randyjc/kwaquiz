@@ -37,6 +37,22 @@ class Config {
     if (!isMediaExists) {
       fs.mkdirSync(getPath("media"))
     }
+
+    const isThemeExists = fs.existsSync(getPath("theme.json"))
+
+    if (!isThemeExists) {
+      fs.writeFileSync(
+        getPath("theme.json"),
+        JSON.stringify(
+          {
+            brandName: "Rahoot",
+            backgroundUrl: null,
+          },
+          null,
+          2
+        )
+      )
+    }
   }
 
   static init() {
@@ -151,6 +167,17 @@ class Config {
     return {}
   }
 
+  static theme() {
+    this.ensureBaseFolders()
+    try {
+      const raw = fs.readFileSync(getPath("theme.json"), "utf-8")
+      return JSON.parse(raw)
+    } catch (error) {
+      console.error("Failed to read theme config:", error)
+      return { brandName: "Rahoot", backgroundUrl: null }
+    }
+  }
+
   static quizz() {
     this.ensureBaseFolders()
 
@@ -230,6 +257,17 @@ class Config {
     this.ensureBaseFolders()
 
     return getPath(fileName ? `media/${fileName}` : "media")
+  }
+
+  static saveTheme(theme: { brandName?: string; backgroundUrl?: string | null }) {
+    this.ensureBaseFolders()
+    const next = {
+      brandName: theme.brandName || "Rahoot",
+      backgroundUrl: theme.backgroundUrl ?? null,
+    }
+
+    fs.writeFileSync(getPath("theme.json"), JSON.stringify(next, null, 2))
+    return next
   }
 }
 
