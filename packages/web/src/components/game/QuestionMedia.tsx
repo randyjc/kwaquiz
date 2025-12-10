@@ -13,6 +13,8 @@ type Props = {
 }
 
 const STORAGE_KEY = "kwaquiz-autoplay-enabled"
+let audioCtx: AudioContext | null = null
+let globalUnlocked = false
 
 const QuestionMedia = ({
   media,
@@ -42,7 +44,27 @@ const QuestionMedia = ({
     }
   }, [requireUserEnable])
 
+  const ensureUnlocked = async () => {
+    if (typeof window === "undefined" || globalUnlocked) return
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      }
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume()
+      }
+      // play a silent audio to keep gesture active for this page
+      const silent = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")
+      silent.muted = true
+      await silent.play().catch(() => {})
+      globalUnlocked = true
+    } catch {
+      // ignore
+    }
+  }
+
   const primeAutoplay = async () => {
+    await ensureUnlocked()
     setAutoplayReady(true)
     setPromptEnable(false)
     if (typeof window !== "undefined") {
@@ -91,6 +113,7 @@ const QuestionMedia = ({
     const tryPlay = async (el: HTMLMediaElement | null) => {
       if (!el) return
       try {
+        await ensureUnlocked()
         el.pause()
         el.currentTime = 0
         await el.play()
