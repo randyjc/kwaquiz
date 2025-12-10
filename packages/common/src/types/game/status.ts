@@ -33,6 +33,7 @@ export type CommonStatusDataMap = {
     media?: QuestionMedia
     time: number
     totalPlayer: number
+    syncMedia?: boolean
   }
   SHOW_RESULT: {
     correct: boolean

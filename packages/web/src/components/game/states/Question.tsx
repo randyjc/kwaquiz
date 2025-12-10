@@ -12,7 +12,7 @@ type Props = {
 }
 
 const Question = ({
-  data: { question, image, media, cooldown, showQuestion },
+  data: { question, image, media, cooldown, showQuestion, syncMedia },
 }: Props) => {
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
@@ -55,6 +55,7 @@ const Question = ({
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
           playRequest={playRequest ?? undefined}
+          requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
         />
       </div>
       {cooldown > 0 ? (

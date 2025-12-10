@@ -9,18 +9,59 @@ type Props = {
   alt: string
   onPlayChange?: (_playing: boolean) => void
   playRequest?: { nonce: number; startAt: number }
+  requireUserEnable?: boolean
 }
 
-const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
+const STORAGE_KEY = "kwaquiz-autoplay-enabled"
+
+const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnable }: Props) => {
   const [zoomed, setZoomed] = useState(false)
+  const [autoplayReady, setAutoplayReady] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastNonce = useRef<number>(0)
   const playTimer = useRef<NodeJS.Timeout | null>(null)
+  const pendingRequest = useRef<typeof playRequest | null>(null)
 
   useEffect(() => {
-    if (!media || !playRequest) return
-    const { nonce, startAt } = playRequest
+    if (typeof window === "undefined") return
+    const stored = window.sessionStorage.getItem(STORAGE_KEY)
+    if (stored === "true") {
+      setAutoplayReady(true)
+    }
+  }, [])
+
+  const primeAutoplay = async () => {
+    setAutoplayReady(true)
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(STORAGE_KEY, "true")
+    }
+    const el =
+      media?.type === "audio"
+        ? audioRef.current
+        : media?.type === "video"
+          ? videoRef.current
+          : null
+    if (!el) return
+    try {
+      el.muted = true
+      await el.play()
+      el.pause()
+      el.currentTime = 0
+    } catch {
+      // ignore; user interaction already happened
+    } finally {
+      setTimeout(() => {
+        if (el) el.muted = false
+      }, 150)
+    }
+    if (pendingRequest.current && media) {
+      runPlay(pendingRequest.current, media)
+    }
+  }
+
+  const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
+    const { nonce, startAt } = request
     if (nonce === lastNonce.current) return
     lastNonce.current = nonce
 
@@ -53,12 +94,21 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
     const delay = Math.max(0, startAt - Date.now())
     playTimer.current = setTimeout(() => {
       playTimer.current = null
-      if (media.type === "audio") {
+      if (currentMedia.type === "audio") {
         tryPlay(audioRef.current)
-      } else if (media.type === "video") {
+      } else if (currentMedia.type === "video") {
         tryPlay(videoRef.current)
       }
     }, delay)
+  }
+
+  useEffect(() => {
+    if (!media || !playRequest) return
+    pendingRequest.current = playRequest
+    if (requireUserEnable && !autoplayReady && (media.type === "audio" || media.type === "video")) {
+      return
+    }
+    runPlay(playRequest, media)
 
     return () => {
       if (playTimer.current) {
@@ -66,7 +116,16 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
         playTimer.current = null
       }
     }
-  }, [playRequest, media])
+  }, [playRequest, media, autoplayReady, requireUserEnable])
+
+  useEffect(() => {
+    if (!media) return
+    if (!pendingRequest.current) return
+    if (requireUserEnable && !autoplayReady && (media.type === "audio" || media.type === "video")) {
+      return
+    }
+    runPlay(pendingRequest.current, media)
+  }, [autoplayReady, requireUserEnable, media])
 
   if (!media) {
     return null
@@ -103,7 +162,24 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
 
     case "audio":
       return (
-        <div className={clsx(containerClass, "px-4")}>
+        <div className={clsx(containerClass, "relative px-4")}>
+          {!autoplayReady && requireUserEnable && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
+              <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
+                <p className="text-lg font-semibold">Enable synced playback</p>
+                <p className="text-sm text-white/90">
+                  Tap once so we can start audio when the host hits play.
+                </p>
+                <button
+                  type="button"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow"
+                  onClick={primeAutoplay}
+                >
+                  Allow audio
+                </button>
+              </div>
+            </div>
+          )}
           <audio
             ref={audioRef}
             controls
@@ -120,7 +196,24 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
 
     case "video":
       return (
-        <div className={containerClass}>
+        <div className={clsx(containerClass, "relative")}>
+          {!autoplayReady && requireUserEnable && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
+              <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
+                <p className="text-lg font-semibold">Enable synced playback</p>
+                <p className="text-sm text-white/90">
+                  Tap once so we can start video when the host hits play.
+                </p>
+                <button
+                  type="button"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow"
+                  onClick={primeAutoplay}
+                >
+                  Allow video
+                </button>
+              </div>
+            </div>
+          )}
           <video
             ref={videoRef}
             controls

@@ -809,6 +809,7 @@ class Game {
       media: question.media,
       time: question.time,
       totalPlayer: this.players.length,
+      syncMedia: question.syncMedia !== false,
     })
 
     await this.startCooldown(question.time)

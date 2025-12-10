@@ -21,7 +21,7 @@ type Props = {
 }
 
 const Answers = ({
-  data: { question, answers, image, media, time, totalPlayer },
+  data: { question, answers, image, media, time, totalPlayer, syncMedia },
 }: Props) => {
   const { gameId }: { gameId?: string } = useParams()
   const { socket } = useSocket()
@@ -105,6 +105,7 @@ const Answers = ({
           alt={question}
           onPlayChange={(playing) => setIsMediaPlaying(playing)}
           playRequest={playRequest ?? undefined}
+          requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
         />
       </div>
 
