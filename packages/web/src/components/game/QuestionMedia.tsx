@@ -161,7 +161,7 @@ const QuestionMedia = ({
 
     pendingRequest.current = request
     // If the start time is already in the past, nudge forward a bit
-    const delay = Math.max(0, startAt - Date.now() + 50)
+    const delay = Math.max(0, startAt - Date.now() + 120)
     playTimer.current = setTimeout(() => {
       playTimer.current = null
       if (currentMedia.type === "audio") {
@@ -171,7 +171,7 @@ const QuestionMedia = ({
       }
     }, delay)
 
-    // fallback: if still stalled shortly after start time, try another play without repropt
+    // fallback: if still stalled shortly after start time, try another play without re-prompt
     fallbackTimer.current = setTimeout(() => {
       const el =
         currentMedia.type === "audio"
@@ -181,9 +181,9 @@ const QuestionMedia = ({
             : null
       if (!el) return
       if (el.paused || el.currentTime === 0) {
-        void el.play().catch(() => {})
+        tryPlay(el)
       }
-    }, delay + 1200)
+    }, delay + 800)
   }
 
   useEffect(() => {
