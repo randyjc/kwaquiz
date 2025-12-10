@@ -1,5 +1,8 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 import { STATUS, Status } from "@rahoot/common/types/game/status"
 import Question from "@rahoot/web/components/game/states/Question"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
@@ -200,7 +203,3 @@ const ViewerPage = () => {
 }
 
 export default ViewerPage
-"use client"
-
-export const dynamic = "force-dynamic"
-export const revalidate = 0
