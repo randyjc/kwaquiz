@@ -21,7 +21,7 @@ type Props = {
 }
 
 const Answers = ({
-  data: { question, answers, image, media, time, totalPlayer, syncMedia },
+  data: { question, answers, image, media, time, totalPlayer },
 }: Props) => {
   const { gameId }: { gameId?: string } = useParams()
   const { socket } = useSocket()
@@ -31,7 +31,6 @@ const Answers = ({
   const [paused, setPaused] = useState(false)
   const [totalAnswer, setTotalAnswer] = useState(0)
   const [isMediaPlaying, setIsMediaPlaying] = useState(false)
-  const [playRequest, setPlayRequest] = useState<{ nonce: number; startAt: number } | null>(null)
 
   const [sfxPop] = useSound(SFX_ANSWERS_SOUND, {
     volume: 0.1,
@@ -89,10 +88,6 @@ const Answers = ({
     sfxPop()
   })
 
-  useEvent("game:mediaPlay", ({ nonce, startAt }) => {
-    setPlayRequest({ nonce, startAt })
-  })
-
   return (
     <div className="flex h-full flex-1 flex-col justify-between">
       <div className="mx-auto inline-flex h-full w-full max-w-7xl flex-1 flex-col items-center justify-center gap-5">
@@ -103,10 +98,7 @@ const Answers = ({
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
-          key={media?.url || image || "answer-media"}
           onPlayChange={(playing) => setIsMediaPlaying(playing)}
-          playRequest={playRequest ?? undefined}
-          requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
         />
       </div>
 

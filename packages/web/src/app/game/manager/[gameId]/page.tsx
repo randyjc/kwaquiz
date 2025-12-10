@@ -28,7 +28,6 @@ const ManagerGame = () => {
   const [cooldownPaused, setCooldownPaused] = useState(false)
   const [breakActive, setBreakActive] = useState(false)
   const [showQuestionPreview, setShowQuestionPreview] = useState(true)
-  const [hasPlayableMedia, setHasPlayableMedia] = useState(false)
   const { players } = useManagerStore()
 
   useEvent("game:status", ({ name, data }) => {
@@ -40,18 +39,6 @@ const ManagerGame = () => {
       ) {
         setShowQuestionPreview((data as any).showQuestion)
       }
-      const media = (data as any)?.media
-      const syncFlag =
-        name === STATUS.SHOW_QUESTION && typeof (data as any).syncMedia === "boolean"
-          ? (data as any).syncMedia
-          : true
-      setHasPlayableMedia(
-        Boolean(
-          media &&
-            (media.type === "audio" || media.type === "video") &&
-            syncFlag !== false,
-        ),
-      )
     }
   })
 
@@ -74,19 +61,6 @@ const ManagerGame = () => {
       ) {
         setShowQuestionPreview((status.data as any).showQuestion)
       }
-      const media = (status.data as any)?.media
-      const syncFlag =
-        status.name === STATUS.SHOW_QUESTION &&
-        typeof (status.data as any).syncMedia === "boolean"
-          ? (status.data as any).syncMedia
-          : true
-      setHasPlayableMedia(
-        Boolean(
-          media &&
-            (media.type === "audio" || media.type === "video") &&
-            syncFlag !== false,
-        ),
-      )
     },
   )
 
@@ -170,11 +144,6 @@ const ManagerGame = () => {
     socket?.emit("manager:setQuestionPreview", { gameId, show: next })
   }
 
-  const handlePlayMedia = () => {
-    if (!gameId || !hasPlayableMedia) return
-    socket?.emit("manager:playMedia", { gameId })
-  }
-
   const handleEndGame = () => {
     if (!gameId) return
     socket?.emit("manager:endGame", { gameId })
@@ -235,7 +204,6 @@ const ManagerGame = () => {
       }
       onBreakToggle={handleBreakToggle}
       breakActive={breakActive}
-      onPlayMedia={hasPlayableMedia ? handlePlayMedia : undefined}
       onToggleQuestionPreview={handleToggleQuestionPreview}
       showQuestionPreview={showQuestionPreview}
       onEnd={handleEndGame}

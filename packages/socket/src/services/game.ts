@@ -578,28 +578,16 @@ class Game {
       return
     }
 
-    const isMedia =
-      question.media && (question.media.type === "audio" || question.media.type === "video")
-
-    const effectiveCooldown = isMedia ? 0 : question.cooldown
-
     this.broadcastStatus(STATUS.SHOW_QUESTION, {
       question: question.question,
       image: question.image,
       media: question.media,
-      cooldown: effectiveCooldown,
+      cooldown: question.cooldown,
       showQuestion: this.showQuestionPreview,
-      syncMedia: question.syncMedia !== false,
     })
 
-    if (isMedia) {
-      this.manualStartPending = true
-      this.persist()
-      return
-    }
-
-    if (effectiveCooldown > 0) {
-      await this.startCooldown(effectiveCooldown)
+    if (question.cooldown > 0) {
+      await this.startCooldown(question.cooldown)
     }
 
     if (!this.started) {
@@ -809,7 +797,6 @@ class Game {
       media: question.media,
       time: question.time,
       totalPlayer: this.players.length,
-      syncMedia: question.syncMedia !== false,
     })
 
     await this.startCooldown(question.time)

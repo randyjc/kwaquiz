@@ -12,12 +12,11 @@ type Props = {
 }
 
 const Question = ({
-  data: { question, image, media, cooldown, showQuestion, syncMedia },
+  data: { question, image, media, cooldown, showQuestion },
 }: Props) => {
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
   const [paused, setPaused] = useState(false)
-  const [playRequest, setPlayRequest] = useState<{ nonce: number; startAt: number } | null>(null)
 
   useEffect(() => {
     sfxShow()
@@ -29,10 +28,6 @@ const Question = ({
 
   useEvent("game:cooldownPause", (isPaused) => {
     setPaused(isPaused)
-  })
-
-  useEvent("game:mediaPlay", ({ nonce, startAt }) => {
-    setPlayRequest({ nonce, startAt })
   })
 
   const percent =
@@ -54,9 +49,6 @@ const Question = ({
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
-          key={media?.url || image || "question-media"}
-          playRequest={playRequest ?? undefined}
-          requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
         />
       </div>
       {cooldown > 0 ? (
