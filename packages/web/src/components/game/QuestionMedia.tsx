@@ -87,9 +87,9 @@ const QuestionMedia = ({
     const el =
       media?.type === "audio"
         ? audioRef.current
-        : media?.type === "video"
-          ? videoRef.current
-          : null
+          : media?.type === "video"
+            ? videoRef.current
+            : null
 
     if (el) {
       try {
@@ -133,6 +133,8 @@ const QuestionMedia = ({
       if (!el) return
       try {
         await ensureUnlocked()
+        if (isIOS) el.muted = true
+        el.load?.()
         el.pause()
         el.currentTime = 0
         await el.play()
@@ -141,6 +143,7 @@ const QuestionMedia = ({
       } catch {
         try {
           el.muted = true
+          el.load?.()
           el.pause()
           el.currentTime = 0
           await el.play()

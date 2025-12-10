@@ -54,6 +54,7 @@ const Question = ({
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
+          key={media?.url || image || "question-media"}
           playRequest={playRequest ?? undefined}
           requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
         />

@@ -103,6 +103,7 @@ const Answers = ({
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
+          key={media?.url || image || "answer-media"}
           onPlayChange={(playing) => setIsMediaPlaying(playing)}
           playRequest={playRequest ?? undefined}
           requireUserEnable={!!media && media.type !== "image" && syncMedia !== false}
