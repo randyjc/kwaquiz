@@ -1,11 +1,11 @@
 "use client"
 
 import { STATUS, Status } from "@rahoot/common/types/game/status"
-import Question from "@rahoot/web/components/game/states/Question"
+import QuestionMedia from "@rahoot/web/components/game/QuestionMedia"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 import background from "@rahoot/web/assets/background.webp"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 
 type StatusPayload = { name: Status; data: any } | null
@@ -73,82 +73,6 @@ const ViewerClient = () => {
     })
   }
 
-  const content = useMemo(() => {
-    if (!status) {
-      return (
-        <div className="rounded-md bg-white/90 p-6 text-center shadow">
-          <p className="text-lg font-semibold text-gray-800">
-            Enter PIN and manager password to start viewing.
-          </p>
-        </div>
-      )
-    }
-
-    switch (status.name) {
-      case STATUS.SHOW_QUESTION:
-        return <Question data={status.data} forceShowMedia />
-      case STATUS.SELECT_ANSWER:
-        return (
-          <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-4 shadow">
-            <h2 className="text-center text-3xl font-bold text-gray-900">
-              {status.data.question}
-            </h2>
-            {status.data.media || status.data.image ? (
-              <Question
-                data={{ ...status.data, cooldown: 0, showQuestion: true }}
-                forceShowMedia
-              />
-            ) : null}
-            <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
-              {status.data.answers?.map((ans: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="rounded-lg bg-gray-100 px-4 py-3 text-lg font-semibold text-gray-900 shadow-inner"
-                >
-                  {ans}
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      case STATUS.SHOW_PREPARED:
-        return (
-          <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">
-              Question {status.data.questionNumber} is coming up…
-            </p>
-          </div>
-        )
-      case STATUS.SHOW_START:
-        return (
-          <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">
-              Starting {status.data.subject} in {status.data.time}s
-            </p>
-          </div>
-        )
-      case STATUS.WAIT:
-        return (
-          <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">
-              {status.data.text}
-            </p>
-          </div>
-        )
-      case STATUS.SHOW_RESULT:
-      case STATUS.SHOW_LEADERBOARD:
-      case STATUS.FINISHED:
-      default:
-        return (
-          <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">
-              Waiting for updates…
-            </p>
-          </div>
-        )
-    }
-  }, [status])
-
   const resolvedBackground = backgroundUrl || background.src
 
   return (
@@ -194,7 +118,81 @@ const ViewerClient = () => {
           </p>
         </div>
 
-        <div className="flex w-full justify-center">{content}</div>
+        <div className="flex w-full justify-center">
+          {!status ? (
+            <div className="rounded-md bg-white/90 p-6 text-center shadow">
+              <p className="text-lg font-semibold text-gray-800">
+                Enter PIN and manager password to start viewing.
+              </p>
+            </div>
+          ) : status.name === STATUS.SHOW_QUESTION ? (
+            <div className="flex w-full max-w-6xl flex-col items-center gap-6 rounded-lg bg-white/90 p-6 shadow">
+              <h2 className="text-center text-3xl font-bold text-gray-900">
+                {status.data.question}
+              </h2>
+              <QuestionMedia
+                media={
+                  status.data.media ||
+                  (status.data.image
+                    ? { type: "image", url: status.data.image }
+                    : undefined)
+                }
+                alt={status.data.question}
+              />
+            </div>
+          ) : status.name === STATUS.SELECT_ANSWER ? (
+            <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-6 shadow">
+              <h2 className="text-center text-3xl font-bold text-gray-900">
+                {status.data.question}
+              </h2>
+              {(status.data.media || status.data.image) && (
+                <QuestionMedia
+                  media={
+                    status.data.media ||
+                    (status.data.image
+                      ? { type: "image", url: status.data.image }
+                      : undefined)
+                  }
+                  alt={status.data.question}
+                />
+              )}
+              <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
+                {status.data.answers?.map((ans: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="rounded-lg bg-gray-100 px-4 py-3 text-lg font-semibold text-gray-900 shadow-inner"
+                  >
+                    {ans}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : status.name === STATUS.SHOW_PREPARED ? (
+            <div className="rounded-md bg-white/90 p-6 text-center shadow">
+              <p className="text-lg font-semibold text-gray-800">
+                Question {status.data.questionNumber} is coming up…
+              </p>
+            </div>
+          ) : status.name === STATUS.SHOW_START ? (
+            <div className="rounded-md bg-white/90 p-6 text-center shadow">
+              <p className="text-lg font-semibold text-gray-800">
+                Starting {status.data.subject} in {status.data.time}s
+              </p>
+            </div>
+          ) : status.name === STATUS.WAIT ? (
+            <div className="rounded-md bg-white/90 p-6 text-center shadow">
+              <p className="text-lg font-semibold text-gray-800">
+                {status.data.text}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md bg-white/90 p-6 text-center shadow">
+              <p className="text-lg font-semibold text-gray-800">
+                Waiting for updates…
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
