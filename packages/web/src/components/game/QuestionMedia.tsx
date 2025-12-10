@@ -268,7 +268,10 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative px-4")}>
           {promptEnable && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60 pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
                 <p className="text-sm text-white/90">
@@ -276,7 +279,8 @@ const QuestionMedia = ({
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
+                  tabIndex={0}
                   onClick={primeAutoplay}
                 >
                   Allow audio
@@ -289,7 +293,10 @@ const QuestionMedia = ({
             controls
             crossOrigin="anonymous"
             src={media.url}
-            className="mt-4 w-full rounded-md bg-black/40 p-2 shadow-lg"
+            className={clsx(
+              "mt-4 w-full rounded-md bg-black/40 p-2 shadow-lg",
+              promptEnable && "pointer-events-none opacity-50",
+            )}
             preload="auto"
             onPlay={() => onPlayChange?.(true)}
             onPause={() => onPlayChange?.(false)}
@@ -302,7 +309,10 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative")}>
           {promptEnable && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60 pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
                 <p className="text-sm text-white/90">
@@ -310,7 +320,8 @@ const QuestionMedia = ({
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
+                  tabIndex={0}
                   onClick={primeAutoplay}
                 >
                   Allow video
@@ -324,7 +335,10 @@ const QuestionMedia = ({
             crossOrigin="anonymous"
             playsInline
             src={media.url}
-            className="m-4 w-full max-w-5xl rounded-md shadow-lg"
+            className={clsx(
+              "m-4 w-full max-w-5xl rounded-md shadow-lg",
+              promptEnable && "pointer-events-none opacity-50",
+            )}
             preload="auto"
             onPlay={() => onPlayChange?.(true)}
             onPause={() => onPlayChange?.(false)}
