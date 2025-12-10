@@ -162,18 +162,14 @@ const QuestionMedia = ({
     }
 
     pendingRequest.current = request
-    // Align to requested start; if already passed, play asap
-    const delay = Math.max(0, startAt - Date.now())
-    playTimer.current = setTimeout(() => {
-      playTimer.current = null
-      if (currentMedia.type === "audio") {
-        tryPlay(audioRef.current)
-      } else if (currentMedia.type === "video") {
-        tryPlay(videoRef.current)
-      }
-    }, delay)
+    // Play immediately to avoid clock drift between clients and server
+    if (currentMedia.type === "audio") {
+      tryPlay(audioRef.current)
+    } else if (currentMedia.type === "video") {
+      tryPlay(videoRef.current)
+    }
 
-    // fallback: if still stalled shortly after start time, try another play without re-prompt
+    // fallback: retry shortly if still paused
     fallbackTimer.current = setTimeout(() => {
       const el =
         currentMedia.type === "audio"
@@ -185,7 +181,7 @@ const QuestionMedia = ({
       if (el.paused || el.currentTime === 0) {
         tryPlay(el)
       }
-    }, delay + 800)
+    }, 500)
   }
 
   useEffect(() => {
