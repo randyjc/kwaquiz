@@ -28,6 +28,7 @@ const ManagerGame = () => {
   const [cooldownPaused, setCooldownPaused] = useState(false)
   const [breakActive, setBreakActive] = useState(false)
   const [showQuestionPreview, setShowQuestionPreview] = useState(true)
+  const [viewerMode, setViewerMode] = useState(false)
   const { players } = useManagerStore()
 
   useEvent("game:status", ({ name, data }) => {
@@ -38,6 +39,9 @@ const ManagerGame = () => {
         typeof (data as any).showQuestion === "boolean"
       ) {
         setShowQuestionPreview((data as any).showQuestion)
+      }
+      if (typeof (data as any).viewerMode === "boolean") {
+        setViewerMode((data as any).viewerMode)
       }
     }
   })
@@ -60,6 +64,9 @@ const ManagerGame = () => {
         typeof (status.data as any).showQuestion === "boolean"
       ) {
         setShowQuestionPreview((status.data as any).showQuestion)
+      }
+      if (typeof (status.data as any).viewerMode === "boolean") {
+        setViewerMode((status.data as any).viewerMode)
       }
     },
   )
@@ -144,6 +151,11 @@ const ManagerGame = () => {
     socket?.emit("manager:setQuestionPreview", { gameId, show: next })
   }
 
+  const handleViewerToggle = () => {
+    if (!gameId) return
+    socket?.emit("manager:setViewerMode", { gameId, enabled: !viewerMode })
+  }
+
   const handleEndGame = () => {
     if (!gameId) return
     socket?.emit("manager:endGame", { gameId })
@@ -168,12 +180,12 @@ const ManagerGame = () => {
       break
 
     case STATUS.SHOW_QUESTION:
-      component = <Question data={status.data} />
+      component = <Question data={status.data} forceShowMedia />
 
       break
 
     case STATUS.SELECT_ANSWER:
-      component = <Answers data={status.data} />
+      component = <Answers data={status.data} forceShowMedia />
 
       break
 
@@ -206,6 +218,8 @@ const ManagerGame = () => {
       breakActive={breakActive}
       onToggleQuestionPreview={handleToggleQuestionPreview}
       showQuestionPreview={showQuestionPreview}
+      onViewerModeToggle={handleViewerToggle}
+      viewerMode={viewerMode}
       onEnd={handleEndGame}
       players={players}
       manager

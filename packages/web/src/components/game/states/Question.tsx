@@ -9,10 +9,12 @@ import useSound from "use-sound"
 
 type Props = {
   data: CommonStatusDataMap["SHOW_QUESTION"]
+  forceShowMedia?: boolean
 }
 
 const Question = ({
-  data: { question, image, media, cooldown, showQuestion },
+  data: { question, image, media, cooldown, showQuestion, viewerMode },
+  forceShowMedia = false,
 }: Props) => {
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
@@ -33,6 +35,8 @@ const Question = ({
   const percent =
     cooldown > 0 ? Math.max(0, Math.min(100, (seconds / cooldown) * 100)) : 0
 
+  const hideMedia = viewerMode && !forceShowMedia
+
   return (
     <section className="relative mx-auto flex h-full w-full max-w-7xl flex-1 flex-col items-center px-4">
       <div className="flex flex-1 flex-col items-center justify-center gap-5">
@@ -47,7 +51,7 @@ const Question = ({
         )}
 
         <QuestionMedia
-          media={media || (image ? { type: "image", url: image } : undefined)}
+          media={hideMedia ? undefined : media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
         />
       </div>

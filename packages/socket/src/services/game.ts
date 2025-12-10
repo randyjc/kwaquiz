@@ -50,6 +50,7 @@ class Game {
   showQuestionPreview: boolean
   manualStartPending: boolean
   mediaPlayNonce: number
+  viewerMode: boolean
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -92,6 +93,7 @@ class Game {
     this.showQuestionPreview = true
     this.manualStartPending = false
     this.mediaPlayNonce = 0
+    this.viewerMode = false
 
     const roomInvite = createInviteCode()
     this.inviteCode = roomInvite
@@ -152,6 +154,7 @@ class Game {
         : true
     game.manualStartPending = snapshot.manualStartPending || false
     game.mediaPlayNonce = snapshot.mediaPlayNonce || 0
+    game.viewerMode = snapshot.viewerMode || false
 
     if (game.cooldown.active && game.cooldown.remaining > 0 && !game.cooldown.paused) {
       game.startCooldown(game.cooldown.remaining)
@@ -212,6 +215,7 @@ class Game {
       showQuestionPreview: this.showQuestionPreview,
       manualStartPending: this.manualStartPending,
       mediaPlayNonce: this.mediaPlayNonce,
+      viewerMode: this.viewerMode,
     }
   }
 
@@ -584,6 +588,7 @@ class Game {
       media: question.media,
       cooldown: question.cooldown,
       showQuestion: this.showQuestionPreview,
+      viewerMode: this.viewerMode,
     })
 
     if (question.cooldown > 0) {
@@ -797,6 +802,7 @@ class Game {
       media: question.media,
       time: question.time,
       totalPlayer: this.players.length,
+      viewerMode: this.viewerMode,
     })
 
     await this.startCooldown(question.time)
@@ -807,6 +813,24 @@ class Game {
 
     this.showResults(question)
     this.persist()
+  }
+
+  setViewerMode(socket: Socket, enabled: boolean) {
+    if (this.manager.id !== socket.id) {
+      return
+    }
+    this.viewerMode = enabled
+
+    const last = this.lastBroadcastStatus
+    if (
+      last &&
+      (last.name === STATUS.SHOW_QUESTION || last.name === STATUS.SELECT_ANSWER)
+    ) {
+      const data = { ...last.data, viewerMode: this.viewerMode } as any
+      this.broadcastStatus(last.name, data)
+    } else {
+      this.persist()
+    }
   }
 }
 

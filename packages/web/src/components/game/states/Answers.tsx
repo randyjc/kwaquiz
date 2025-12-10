@@ -18,10 +18,12 @@ import useSound from "use-sound"
 
 type Props = {
   data: CommonStatusDataMap["SELECT_ANSWER"]
+  forceShowMedia?: boolean
 }
 
 const Answers = ({
-  data: { question, answers, image, media, time, totalPlayer },
+  data: { question, answers, image, media, time, totalPlayer, viewerMode },
+  forceShowMedia = false,
 }: Props) => {
   const { gameId }: { gameId?: string } = useParams()
   const { socket } = useSocket()
@@ -88,6 +90,8 @@ const Answers = ({
     sfxPop()
   })
 
+  const hideMedia = viewerMode && !forceShowMedia
+
   return (
     <div className="flex h-full flex-1 flex-col justify-between">
       <div className="mx-auto inline-flex h-full w-full max-w-7xl flex-1 flex-col items-center justify-center gap-5">
@@ -96,7 +100,7 @@ const Answers = ({
         </h2>
 
         <QuestionMedia
-          media={media || (image ? { type: "image", url: image } : undefined)}
+          media={hideMedia ? undefined : media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
           onPlayChange={(playing) => setIsMediaPlaying(playing)}
         />

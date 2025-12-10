@@ -26,6 +26,8 @@ type Props = PropsWithChildren & {
   onToggleQuestionPreview?: () => void
   showQuestionPreview?: boolean
   onLeave?: () => void
+  onViewerModeToggle?: () => void
+  viewerMode?: boolean
 }
 
 const GameWrapper = ({
@@ -43,6 +45,8 @@ const GameWrapper = ({
   onToggleQuestionPreview,
   showQuestionPreview,
   onLeave,
+  onViewerModeToggle,
+  viewerMode,
 }: Props) => {
   const { isConnected } = useSocket()
   const { player } = usePlayerStore()
@@ -177,6 +181,17 @@ const GameWrapper = ({
             {manager && onEnd && (
               <Button className="self-end bg-red-600 px-4" onClick={onEnd}>
                 End game
+              </Button>
+            )}
+
+            {manager && onViewerModeToggle && (
+              <Button
+                className={clsx("self-end bg-white px-4 text-black!", {
+                  "pointer-events-none": isDisabled,
+                })}
+                onClick={onViewerModeToggle}
+              >
+                Viewer mode: {viewerMode ? "On" : "Off"}
               </Button>
             )}
           </div>

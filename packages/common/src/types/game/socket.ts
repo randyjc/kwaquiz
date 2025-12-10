@@ -69,6 +69,7 @@ export interface ServerToClientEvents {
   "manager:quizzSaved": (_quizz: QuizzWithId) => void
   "manager:quizzDeleted": (_id: string) => void
   "manager:break": (_active: boolean) => void
+  "viewer:joined": (_data: { gameId: string; status?: { name: Status; data: StatusDataMap[Status] } }) => void
 }
 
 export interface ClientToServerEvents {
@@ -83,6 +84,7 @@ export interface ClientToServerEvents {
   "manager:resumeCooldown": (_message: MessageGameId) => void
   "manager:setBreak": (_message: { gameId?: string; active: boolean }) => void
   "manager:setQuestionPreview": (_message: { gameId?: string; show: boolean }) => void
+  "manager:setViewerMode": (_message: { gameId?: string; enabled: boolean }) => void
   "manager:playMedia": (_message: MessageGameId) => void
   "manager:endGame": (_message: MessageGameId) => void
   "manager:skipQuestionIntro": (_message: MessageGameId) => void
@@ -99,6 +101,9 @@ export interface ClientToServerEvents {
   "player:selectedAnswer": (
     _message: MessageWithoutStatus<{ answerKey: number }>
   ) => void
+
+  // Viewer
+  "viewer:join": (_message: { inviteCode: string; password: string }) => void
 
   // Common
   disconnect: () => void

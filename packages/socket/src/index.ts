@@ -1,5 +1,6 @@
 import { Server } from "@rahoot/common/types/game/socket"
 import { inviteCodeValidator } from "@rahoot/common/validators/auth"
+import { STATUS } from "@rahoot/common/types/game/status"
 import env from "@rahoot/socket/env"
 import Config from "@rahoot/socket/services/config"
 import Game from "@rahoot/socket/services/game"
@@ -242,6 +243,10 @@ io.on("connection", (socket) => {
     withGame(gameId, socket, (game) => game.setQuestionPreview(socket, show))
   )
 
+  socket.on("manager:setViewerMode", ({ gameId, enabled }) =>
+    withGame(gameId, socket, (game) => game.setViewerMode(socket, enabled))
+  )
+
   socket.on("manager:setBreak", ({ gameId, active }) =>
     withGame(gameId, socket, (game) => game.setBreak(socket, active))
   )
@@ -296,6 +301,40 @@ io.on("connection", (socket) => {
     player.connected = false
     io.to(game.gameId).emit("game:totalPlayers", game.players.length)
     io.to(game.manager.id).emit("manager:players", game.players)
+  })
+
+  socket.on("viewer:join", ({ inviteCode, password }) => {
+    const config = Config.game()
+    if (password !== config.managerPassword) {
+      socket.emit("game:errorMessage", "Invalid password")
+      return
+    }
+
+    const result = inviteCodeValidator.safeParse(inviteCode)
+    if (result.error) {
+      socket.emit("game:errorMessage", result.error.issues[0].message)
+      return
+    }
+
+    const game = registry.getGameByInviteCode(inviteCode)
+    if (!game) {
+      socket.emit("game:errorMessage", "Game not found")
+      return
+    }
+
+    socket.join(game.gameId)
+    const currentStatus = game.lastBroadcastStatus
+    if (currentStatus) {
+      socket.emit("viewer:joined", { gameId: game.gameId, status: currentStatus })
+    } else {
+      socket.emit("viewer:joined", {
+        gameId: game.gameId,
+        status: {
+          name: STATUS.WAIT,
+          data: { text: "Waiting for the manager" },
+        },
+      })
+    }
   })
 })
 

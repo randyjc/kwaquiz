@@ -24,6 +24,7 @@ export type CommonStatusDataMap = {
     media?: QuestionMedia
     cooldown: number
     showQuestion: boolean
+    viewerMode?: boolean
   }
   SELECT_ANSWER: {
     question: string
@@ -32,6 +33,7 @@ export type CommonStatusDataMap = {
     media?: QuestionMedia
     time: number
     totalPlayer: number
+    viewerMode?: boolean
   }
   SHOW_RESULT: {
     correct: boolean
