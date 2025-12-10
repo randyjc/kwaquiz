@@ -31,7 +31,7 @@ const Answers = ({
   const [paused, setPaused] = useState(false)
   const [totalAnswer, setTotalAnswer] = useState(0)
   const [isMediaPlaying, setIsMediaPlaying] = useState(false)
-  const [playRequest, setPlayRequest] = useState<number | null>(null)
+  const [playRequest, setPlayRequest] = useState<{ nonce: number; startAt: number } | null>(null)
 
   const [sfxPop] = useSound(SFX_ANSWERS_SOUND, {
     volume: 0.1,
@@ -89,8 +89,8 @@ const Answers = ({
     sfxPop()
   })
 
-  useEvent("game:mediaPlay", ({ nonce }) => {
-    setPlayRequest(nonce)
+  useEvent("game:mediaPlay", ({ nonce, startAt }) => {
+    setPlayRequest({ nonce, startAt })
   })
 
   return (

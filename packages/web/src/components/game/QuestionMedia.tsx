@@ -8,7 +8,7 @@ type Props = {
   media?: QuestionMediaType
   alt: string
   onPlayChange?: (_playing: boolean) => void
-  playRequest?: number
+  playRequest?: { nonce: number; startAt: number }
 }
 
 const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
@@ -16,11 +16,18 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastNonce = useRef<number>(0)
+  const playTimer = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (!media || playRequest === undefined) return
-    if (playRequest === lastNonce.current) return
-    lastNonce.current = playRequest
+    if (!media || !playRequest) return
+    const { nonce, startAt } = playRequest
+    if (nonce === lastNonce.current) return
+    lastNonce.current = nonce
+
+    if (playTimer.current) {
+      clearTimeout(playTimer.current)
+      playTimer.current = null
+    }
 
     const tryPlay = async (el: HTMLMediaElement | null) => {
       if (!el) return
@@ -28,7 +35,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
         el.pause()
         el.currentTime = 0
         await el.play()
-      } catch (err) {
+      } catch {
         try {
           el.muted = true
           el.pause()
@@ -36,17 +43,28 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
           await el.play()
           setTimeout(() => {
             el.muted = false
-          }, 100)
+          }, 150)
         } catch {
           // ignore autoplay failures; user can tap play
         }
       }
     }
 
-    if (media.type === "audio") {
-      tryPlay(audioRef.current)
-    } else if (media.type === "video") {
-      tryPlay(videoRef.current)
+    const delay = Math.max(0, startAt - Date.now())
+    playTimer.current = setTimeout(() => {
+      playTimer.current = null
+      if (media.type === "audio") {
+        tryPlay(audioRef.current)
+      } else if (media.type === "video") {
+        tryPlay(videoRef.current)
+      }
+    }, delay)
+
+    return () => {
+      if (playTimer.current) {
+        clearTimeout(playTimer.current)
+        playTimer.current = null
+      }
     }
   }, [playRequest, media])
 

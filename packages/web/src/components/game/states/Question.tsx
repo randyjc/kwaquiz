@@ -31,8 +31,8 @@ const Question = ({
     setPaused(isPaused)
   })
 
-  useEvent("game:mediaPlay", ({ nonce }) => {
-    setPlayRequest(nonce)
+  useEvent("game:mediaPlay", ({ nonce, startAt }) => {
+    setPlayRequest({ nonce, startAt })
   })
 
   const percent =
