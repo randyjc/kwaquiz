@@ -138,7 +138,7 @@ const QuestionMedia = ({
             : null
       if (!el) return
       const stalled = el.paused || el.currentTime === 0
-      if (stalled && requireUserEnable) {
+      if (stalled && requireUserEnable && !autoplayReady) {
         setPromptEnable(true)
         pendingRequest.current = request
         lastNonce.current = 0
