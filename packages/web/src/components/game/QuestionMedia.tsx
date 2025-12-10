@@ -65,35 +65,49 @@ const QuestionMedia = ({
   }
 
   const primeAutoplay = async () => {
-    await ensureUnlocked()
-    setAutoplayReady(true)
-    setPromptEnable(false)
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(STORAGE_KEY, "true")
-    }
-
-    const el =
-      media?.type === "audio"
-        ? audioRef.current
-        : media?.type === "video"
-          ? videoRef.current
-          : null
-    if (!el) return
     try {
-      el.muted = true
-      await el.play()
-      el.pause()
-      el.currentTime = 0
-    } catch {
-      // ignore
-    } finally {
-      setTimeout(() => {
-        if (el) el.muted = false
-      }, 150)
-    }
+      await ensureUnlocked()
+      setAutoplayReady(true)
+      setPromptEnable(false)
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(STORAGE_KEY, "true")
+      }
 
-    if (pendingRequest.current && media) {
-      runPlay(pendingRequest.current, media)
+      const el =
+        media?.type === "audio"
+          ? audioRef.current
+          : media?.type === "video"
+            ? videoRef.current
+            : null
+
+      if (el) {
+        try {
+          el.muted = true
+          await el.play()
+          el.pause()
+          el.currentTime = 0
+          setTimeout(() => {
+            if (el) el.muted = false
+          }, 150)
+        } catch {
+          // ignore initial warmup failure
+          if (el) el.muted = false
+        }
+      }
+
+      // If we already have a pending sync request, replay it; otherwise attempt immediate play
+      if (pendingRequest.current && media) {
+        const req = pendingRequest.current
+        // If start time is in the past, bump slightly forward to avoid zero delay
+        const bumped =
+          req.startAt < Date.now() ? { ...req, startAt: Date.now() + 150 } : req
+        runPlay(bumped, media)
+      } else if (el && media && (media.type === "audio" || media.type === "video")) {
+        el.currentTime = 0
+        void el.play().catch(() => {})
+      }
+    } catch {
+      setPromptEnable(true)
     }
   }
 
@@ -281,7 +295,10 @@ const QuestionMedia = ({
                   type="button"
                   className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
                   tabIndex={0}
-                  onClick={primeAutoplay}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    primeAutoplay()
+                  }}
                 >
                   Allow audio
                 </button>
@@ -322,7 +339,10 @@ const QuestionMedia = ({
                   type="button"
                   className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
                   tabIndex={0}
-                  onClick={primeAutoplay}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    primeAutoplay()
+                  }}
                 >
                   Allow video
                 </button>
