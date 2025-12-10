@@ -22,16 +22,18 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
     const tryPlay = async (el: HTMLMediaElement | null) => {
       if (!el) return
       try {
+        el.pause()
         el.currentTime = 0
-        el.load()
         await el.play()
       } catch (err) {
         try {
           el.muted = true
+          el.pause()
           el.currentTime = 0
-          el.load()
           await el.play()
-          el.muted = false
+          setTimeout(() => {
+            el.muted = false
+          }, 100)
         } catch {
           // ignore autoplay failures; user can tap play
         }
@@ -87,7 +89,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
             crossOrigin="anonymous"
             src={media.url}
             className="mt-4 w-full rounded-md bg-black/40 p-2 shadow-lg"
-            preload="none"
+            preload="auto"
             onPlay={() => onPlayChange?.(true)}
             onPause={() => onPlayChange?.(false)}
             onEnded={() => onPlayChange?.(false)}
@@ -105,7 +107,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
             playsInline
             src={media.url}
             className="m-4 w-full max-w-5xl rounded-md shadow-lg"
-            preload="metadata"
+            preload="auto"
             onPlay={() => onPlayChange?.(true)}
             onPause={() => onPlayChange?.(false)}
             onEnded={() => onPlayChange?.(false)}

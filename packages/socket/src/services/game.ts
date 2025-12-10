@@ -565,7 +565,7 @@ class Game {
 
     const effectiveCooldown =
       question.media && (question.media.type === "audio" || question.media.type === "video")
-        ? Math.max(question.cooldown, 30)
+        ? 0
         : question.cooldown
 
     this.broadcastStatus(STATUS.SHOW_QUESTION, {
@@ -577,7 +577,9 @@ class Game {
       syncMedia: question.syncMedia !== false,
     })
 
-    await this.startCooldown(effectiveCooldown)
+    if (effectiveCooldown > 0) {
+      await this.startCooldown(effectiveCooldown)
+    }
 
     if (!this.started) {
       return
