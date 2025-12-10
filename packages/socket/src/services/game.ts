@@ -51,6 +51,9 @@ class Game {
   manualStartPending: boolean
   mediaPlayNonce: number
   viewerMode: boolean
+  private viewerRoom() {
+    return `${this.gameId}:viewers`
+  }
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -167,6 +170,7 @@ class Game {
     const statusData = { name: status, data }
     this.lastBroadcastStatus = statusData
     this.io.to(this.gameId).emit("game:status", statusData)
+    this.io.to(this.viewerRoom()).emit("game:status", statusData)
     this.persist()
   }
 
@@ -672,6 +676,19 @@ class Game {
       image: question.image,
       media: question.media,
       solution: question.solution,
+    })
+    // also inform viewers about the correct answer
+    this.io.to(this.viewerRoom()).emit("game:status", {
+      name: STATUS.SHOW_RESPONSES,
+      data: {
+        question: question.question,
+        responses: totalType,
+        correct: question.solution,
+        answers: question.answers,
+        image: question.image,
+        media: question.media,
+        solution: question.solution,
+      },
     })
 
     this.leaderboard = sortedPlayers

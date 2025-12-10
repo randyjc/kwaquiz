@@ -184,6 +184,43 @@ const ViewerClient = () => {
                 Question {status.data.questionNumber} is coming up…
               </p>
             </div>
+          ) : status.name === STATUS.SHOW_RESPONSES ? (
+            <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-6 shadow">
+              <h2 className="text-center text-3xl font-bold text-gray-900">
+                {status.data.question}
+              </h2>
+              {(status.data.media || status.data.image) && (
+                <QuestionMedia
+                  media={
+                    status.data.media ||
+                    (status.data.image
+                      ? { type: "image", url: status.data.image }
+                      : undefined)
+                  }
+                  alt={status.data.question}
+                />
+              )}
+              <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
+                {status.data.answers?.map((ans: string, idx: number) => {
+                  const isCorrect =
+                    typeof status.data.solution === "number" &&
+                    status.data.solution === idx
+                  return (
+                    <div
+                      key={idx}
+                      className={clsx(
+                        "rounded-lg px-4 py-3 text-lg font-semibold shadow-inner",
+                        isCorrect
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-900",
+                      )}
+                    >
+                      {ans}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           ) : status.name === STATUS.SHOW_START ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
               <p className="text-lg font-semibold text-gray-800">

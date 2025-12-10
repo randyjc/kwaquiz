@@ -323,6 +323,7 @@ io.on("connection", (socket) => {
     }
 
     socket.join(game.gameId)
+    socket.join(`${game.gameId}:viewers`)
     const currentStatus = game.lastBroadcastStatus
     if (currentStatus) {
       socket.emit("viewer:joined", { gameId: game.gameId, status: currentStatus })
