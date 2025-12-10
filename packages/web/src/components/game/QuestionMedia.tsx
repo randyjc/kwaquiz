@@ -66,8 +66,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
 
   const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
     const { nonce, startAt } = request
-    if (nonce === lastNonce.current) return
-    lastNonce.current = nonce
+    if (nonce === lastNonce.current && !promptEnable) return
 
     if (playTimer.current) {
       clearTimeout(playTimer.current)
@@ -80,6 +79,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
         el.pause()
         el.currentTime = 0
         await el.play()
+        lastNonce.current = nonce
         pendingRequest.current = null
       } catch {
         try {
@@ -90,11 +90,13 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
           setTimeout(() => {
             el.muted = false
           }, 150)
+          lastNonce.current = nonce
           pendingRequest.current = null
         } catch {
           if (requireUserEnable) {
             setPromptEnable(true)
             pendingRequest.current = request
+            lastNonce.current = 0
           }
           // ignore autoplay failures; user can tap play
         }
