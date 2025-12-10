@@ -61,6 +61,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
   }
 
   const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
+    pendingRequest.current = null
     const { nonce, startAt } = request
     if (nonce === lastNonce.current) return
     lastNonce.current = nonce
@@ -126,6 +127,34 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     }
     runPlay(pendingRequest.current, media)
   }, [autoplayReady, requireUserEnable, media])
+
+  useEffect(() => {
+    const mediaEl =
+      media?.type === "audio"
+        ? audioRef.current
+        : media?.type === "video"
+          ? videoRef.current
+          : null
+
+    if (!mediaEl) return
+
+    const handleReady = () => {
+      if (!pendingRequest.current) return
+      if (requireUserEnable && !autoplayReady && (media?.type === "audio" || media?.type === "video")) {
+        return
+      }
+      if (!media) return
+      runPlay(pendingRequest.current, media)
+    }
+
+    mediaEl.addEventListener("loadeddata", handleReady)
+    mediaEl.addEventListener("canplay", handleReady)
+
+    return () => {
+      mediaEl.removeEventListener("loadeddata", handleReady)
+      mediaEl.removeEventListener("canplay", handleReady)
+    }
+  }, [media, autoplayReady, requireUserEnable])
 
   if (!media) {
     return null
