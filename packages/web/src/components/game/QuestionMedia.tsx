@@ -14,10 +14,17 @@ type Props = {
 
 const STORAGE_KEY = "kwaquiz-autoplay-enabled"
 
-const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnable }: Props) => {
+const QuestionMedia = ({
+  media,
+  alt,
+  onPlayChange,
+  playRequest,
+  requireUserEnable,
+}: Props) => {
   const [zoomed, setZoomed] = useState(false)
   const [autoplayReady, setAutoplayReady] = useState(false)
   const [promptEnable, setPromptEnable] = useState(false)
+
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastNonce = useRef<number>(0)
@@ -41,6 +48,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem(STORAGE_KEY, "true")
     }
+
     const el =
       media?.type === "audio"
         ? audioRef.current
@@ -54,12 +62,13 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       el.pause()
       el.currentTime = 0
     } catch {
-      // ignore; user interaction already happened
+      // ignore
     } finally {
       setTimeout(() => {
         if (el) el.muted = false
       }, 150)
     }
+
     if (pendingRequest.current && media) {
       runPlay(pendingRequest.current, media)
     }
@@ -67,6 +76,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
 
   const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
     const { nonce, startAt } = request
+    // avoid replay unless we re-prompted
     if (nonce === lastNonce.current && !promptEnable) return
 
     if (playTimer.current) {
@@ -103,7 +113,6 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
             pendingRequest.current = request
             lastNonce.current = 0
           }
-          // ignore autoplay failures; user can tap play
         }
       }
     }
@@ -119,6 +128,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       }
     }, delay)
 
+    // fallback: if still stalled shortly after start time, re-show consent
     fallbackTimer.current = setTimeout(() => {
       const el =
         currentMedia.type === "audio"
@@ -205,13 +215,13 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       return (
         <>
           <div className={containerClass}>
-          <img
-            alt={alt}
-            src={media.url}
+            <img
+              alt={alt}
+              src={media.url}
               className="m-4 h-full max-h-[400px] min-h-[200px] w-auto max-w-full cursor-zoom-in rounded-md object-contain shadow-lg"
               onClick={() => setZoomed(true)}
-          />
-        </div>
+            />
+          </div>
           {zoomed && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
