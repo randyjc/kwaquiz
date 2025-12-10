@@ -16,6 +16,16 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
+  useEffect(() => {
+    if (!media) return
+    if (media.type === "audio" && audioRef.current && playRequest !== undefined) {
+      audioRef.current.play().catch(() => {})
+    }
+    if (media.type === "video" && videoRef.current && playRequest !== undefined) {
+      videoRef.current.play().catch(() => {})
+    }
+  }, [playRequest, media])
+
   if (!media) {
     return null
   }
@@ -88,15 +98,5 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
       return null
   }
 }
-
-useEffect(() => {
-  if (!media) return
-  if (media.type === "audio" && audioRef.current && playRequest !== undefined) {
-    audioRef.current.play().catch(() => {})
-  }
-  if (media.type === "video" && videoRef.current && playRequest !== undefined) {
-    videoRef.current.play().catch(() => {})
-  }
-}, [playRequest, media])
 
 export default QuestionMedia
