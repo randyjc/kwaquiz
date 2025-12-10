@@ -27,6 +27,7 @@ const QuestionMedia = ({
   const [zoomed, setZoomed] = useState(false)
   const [autoplayReady, setAutoplayReady] = useState(false)
   const [promptEnable, setPromptEnable] = useState(false)
+  const [manualPlay, setManualPlay] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -129,11 +130,11 @@ const QuestionMedia = ({
       fallbackTimer.current = null
     }
 
-    const tryPlay = async (el: HTMLMediaElement | null) => {
-      if (!el) return
-      try {
-        await ensureUnlocked()
-        el.muted = true
+  const tryPlay = async (el: HTMLMediaElement | null) => {
+    if (!el) return
+    try {
+      await ensureUnlocked()
+      el.muted = true
         el.load?.()
         el.currentTime = 0
         await el.play()
@@ -154,16 +155,19 @@ const QuestionMedia = ({
           }, 150)
           lastNonce.current = nonce
           pendingRequest.current = null
-        } catch {
-          // If autoplay blocked and consent not granted, prompt again
-          if (requireUserEnable && !autoplayReady) {
-            setPromptEnable(true)
-            pendingRequest.current = request
-            lastNonce.current = 0
-          }
+      } catch {
+        // If autoplay blocked and consent not granted, prompt again
+        if (requireUserEnable && !autoplayReady) {
+          setPromptEnable(true)
+          pendingRequest.current = request
+          lastNonce.current = 0
+        } else {
+          // As last resort, ask user to tap play
+          setManualPlay(true)
         }
       }
     }
+  }
 
     pendingRequest.current = request
     // Play immediately to avoid clock drift between clients and server
@@ -178,11 +182,11 @@ const QuestionMedia = ({
       tryPlay(el)
       // fallback: retry shortly if still paused
       fallbackTimer.current = setTimeout(() => {
-        if (el.paused || el.currentTime === 0) {
-          tryPlay(el)
-        }
-      }, 500)
-    }
+      if (el.paused || el.currentTime === 0) {
+        tryPlay(el)
+      }
+    }, 500)
+  }
   }
 
   useEffect(() => {
@@ -286,6 +290,33 @@ const QuestionMedia = ({
     case "audio":
       return (
         <div className={clsx(containerClass, "relative px-4")}>
+          {manualPlay && (
+            <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
+                <p className="mb-3 text-lg font-semibold">Tap to start audio</p>
+                <button
+                  type="button"
+                  className="w-full rounded-full bg-primary px-4 py-3 text-lg font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  onClick={() => {
+                    setManualPlay(false)
+                    const el = audioRef.current
+                    if (el) {
+                      el.muted = true
+                      el.load?.()
+                      el.currentTime = 0
+                      void el.play().then(() => {
+                        setTimeout(() => {
+                          el.muted = false
+                        }, 150)
+                      }).catch(() => {})
+                    }
+                  }}
+                >
+                  Play now
+                </button>
+              </div>
+            </div>
+          )}
           {promptEnable && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4">
               <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
@@ -323,6 +354,33 @@ const QuestionMedia = ({
     case "video":
       return (
         <div className={clsx(containerClass, "relative")}>
+          {manualPlay && (
+            <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
+                <p className="mb-3 text-lg font-semibold">Tap to start video</p>
+                <button
+                  type="button"
+                  className="w-full rounded-full bg-primary px-4 py-3 text-lg font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  onClick={() => {
+                    setManualPlay(false)
+                    const el = videoRef.current
+                    if (el) {
+                      el.muted = true
+                      el.load?.()
+                      el.currentTime = 0
+                      void el.play().then(() => {
+                        setTimeout(() => {
+                          el.muted = false
+                        }, 150)
+                      }).catch(() => {})
+                    }
+                  }}
+                >
+                  Play now
+                </button>
+              </div>
+            </div>
+          )}
           {promptEnable && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4">
               <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
