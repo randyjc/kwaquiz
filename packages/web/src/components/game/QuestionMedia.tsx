@@ -282,23 +282,16 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative px-4")}>
           {promptEnable && (
-            <div
-              className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60 pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
-                <p className="text-lg font-semibold">Enable synced playback</p>
-                <p className="text-sm text-white/90">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
+                <p className="mb-2 text-lg font-semibold">Enable synced playback</p>
+                <p className="mb-4 text-sm text-white/90">
                   Tap once so we can start audio when the host hits play.
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    primeAutoplay()
-                  }}
+                  className="w-full rounded-full bg-primary px-4 py-3 text-lg font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  onClick={() => primeAutoplay()}
                 >
                   Allow audio
                 </button>
@@ -326,23 +319,16 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative")}>
           {promptEnable && (
-            <div
-              className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60 pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
-                <p className="text-lg font-semibold">Enable synced playback</p>
-                <p className="text-sm text-white/90">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4">
+              <div className="w-full max-w-md rounded-lg bg-white/10 p-5 text-center text-white shadow-2xl">
+                <p className="mb-2 text-lg font-semibold">Enable synced playback</p>
+                <p className="mb-4 text-sm text-white/90">
                   Tap once so we can start video when the host hits play.
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white pointer-events-auto"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    primeAutoplay()
-                  }}
+                  className="w-full rounded-full bg-primary px-4 py-3 text-lg font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
+                  onClick={() => primeAutoplay()}
                 >
                   Allow video
                 </button>
