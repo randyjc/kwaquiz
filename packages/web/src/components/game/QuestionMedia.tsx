@@ -133,11 +133,19 @@ const QuestionMedia = ({
       if (!el) return
       try {
         await ensureUnlocked()
-        if (isIOS) el.muted = true
+        // Aggressive prep for Safari/iOS
+        el.muted = true
         el.load?.()
         el.pause()
         el.currentTime = 0
         await el.play()
+        // unmute after playback starts (keep muted on iOS until gesture unlock proved)
+        setTimeout(() => {
+          if (!el) return
+          if (!isIOS || autoplayReady) {
+            el.muted = false
+          }
+        }, 200)
         lastNonce.current = nonce
         pendingRequest.current = null
       } catch {
@@ -148,7 +156,9 @@ const QuestionMedia = ({
           el.currentTime = 0
           await el.play()
           setTimeout(() => {
-            el.muted = false
+            if (!isIOS || autoplayReady) {
+              el.muted = false
+            }
           }, 150)
           lastNonce.current = nonce
           pendingRequest.current = null
