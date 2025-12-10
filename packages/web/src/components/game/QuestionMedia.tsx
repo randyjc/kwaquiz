@@ -108,19 +108,11 @@ const QuestionMedia = ({
           lastNonce.current = nonce
           pendingRequest.current = null
         } catch {
-          // Autoplay truly blocked: force re-consent even if we thought we were ready
-          if (requireUserEnable) {
-            setAutoplayReady(false)
+          // If we never had consent, prompt; otherwise keep consent and let user tap play manually
+          if (requireUserEnable && !autoplayReady) {
             setPromptEnable(true)
             pendingRequest.current = request
             lastNonce.current = 0
-            try {
-              if (typeof window !== "undefined") {
-                window.sessionStorage.removeItem(STORAGE_KEY)
-              }
-            } catch {
-              // ignore
-            }
           }
         }
       }
@@ -147,18 +139,10 @@ const QuestionMedia = ({
             : null
       if (!el) return
       const stalled = el.paused || el.currentTime === 0
-      if (stalled && requireUserEnable) {
-        setAutoplayReady(false)
+      if (stalled && requireUserEnable && !autoplayReady) {
         setPromptEnable(true)
         pendingRequest.current = request
         lastNonce.current = 0
-        try {
-          if (typeof window !== "undefined") {
-            window.sessionStorage.removeItem(STORAGE_KEY)
-          }
-        } catch {
-          // ignore
-        }
       }
     }, delay + 2000)
   }
