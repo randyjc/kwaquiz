@@ -49,6 +49,7 @@ class Game {
   breakActive: boolean
   showQuestionPreview: boolean
   manualStartPending: boolean
+  mediaPlayNonce: number
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -90,6 +91,7 @@ class Game {
     this.breakActive = false
     this.showQuestionPreview = true
     this.manualStartPending = false
+    this.mediaPlayNonce = 0
 
     const roomInvite = createInviteCode()
     this.inviteCode = roomInvite
@@ -149,6 +151,7 @@ class Game {
         ? snapshot.showQuestionPreview
         : true
     game.manualStartPending = snapshot.manualStartPending || false
+    game.mediaPlayNonce = snapshot.mediaPlayNonce || 0
 
     if (game.cooldown.active && game.cooldown.remaining > 0 && !game.cooldown.paused) {
       game.startCooldown(game.cooldown.remaining)
@@ -208,6 +211,7 @@ class Game {
       breakActive: this.breakActive,
       showQuestionPreview: this.showQuestionPreview,
       manualStartPending: this.manualStartPending,
+      mediaPlayNonce: this.mediaPlayNonce,
     }
   }
 
@@ -786,7 +790,12 @@ class Game {
     if (question.syncMedia === false) {
       return
     }
-    this.io.to(this.gameId).emit("game:mediaPlay")
+    this.mediaPlayNonce = (this.mediaPlayNonce || 0) + 1
+    const startAt = Date.now() + 700
+    this.io.to(this.gameId).emit("game:mediaPlay", {
+      startAt,
+      nonce: this.mediaPlayNonce,
+    })
   }
 
   private async startAnswerPhase(question: any) {

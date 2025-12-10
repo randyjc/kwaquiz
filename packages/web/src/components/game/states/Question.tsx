@@ -17,7 +17,7 @@ const Question = ({
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
   const [paused, setPaused] = useState(false)
-  const [playRequest, setPlayRequest] = useState(0)
+  const [playRequest, setPlayRequest] = useState<number | null>(null)
 
   useEffect(() => {
     sfxShow()
@@ -31,8 +31,8 @@ const Question = ({
     setPaused(isPaused)
   })
 
-  useEvent("game:mediaPlay", () => {
-    setPlayRequest((prev) => prev + 1)
+  useEvent("game:mediaPlay", ({ nonce }) => {
+    setPlayRequest(nonce)
   })
 
   const percent =
@@ -54,7 +54,7 @@ const Question = ({
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
-          playRequest={playRequest}
+          playRequest={playRequest ?? undefined}
         />
       </div>
       {cooldown > 0 ? (

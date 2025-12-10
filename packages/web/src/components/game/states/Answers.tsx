@@ -31,6 +31,7 @@ const Answers = ({
   const [paused, setPaused] = useState(false)
   const [totalAnswer, setTotalAnswer] = useState(0)
   const [isMediaPlaying, setIsMediaPlaying] = useState(false)
+  const [playRequest, setPlayRequest] = useState<number | null>(null)
 
   const [sfxPop] = useSound(SFX_ANSWERS_SOUND, {
     volume: 0.1,
@@ -88,6 +89,10 @@ const Answers = ({
     sfxPop()
   })
 
+  useEvent("game:mediaPlay", ({ nonce }) => {
+    setPlayRequest(nonce)
+  })
+
   return (
     <div className="flex h-full flex-1 flex-col justify-between">
       <div className="mx-auto inline-flex h-full w-full max-w-7xl flex-1 flex-col items-center justify-center gap-5">
@@ -99,6 +104,7 @@ const Answers = ({
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
           onPlayChange={(playing) => setIsMediaPlaying(playing)}
+          playRequest={playRequest ?? undefined}
         />
       </div>
 

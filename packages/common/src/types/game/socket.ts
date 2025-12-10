@@ -33,7 +33,7 @@ export interface ServerToClientEvents {
   "game:cooldown": (_count: number) => void
   "game:cooldownPause": (_paused: boolean) => void
   "game:reset": (_message: string) => void
-  "game:mediaPlay": () => void
+  "game:mediaPlay": (_data: { startAt: number; nonce: number }) => void
   "game:updateQuestion": (_data: { current: number; total: number }) => void
   "game:playerAnswer": (_count: number) => void
   "game:break": (_active: boolean) => void

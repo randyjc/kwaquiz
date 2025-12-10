@@ -15,9 +15,12 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
   const [zoomed, setZoomed] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const lastNonce = useRef<number>(0)
 
   useEffect(() => {
     if (!media || playRequest === undefined) return
+    if (playRequest === lastNonce.current) return
+    lastNonce.current = playRequest
 
     const tryPlay = async (el: HTMLMediaElement | null) => {
       if (!el) return
