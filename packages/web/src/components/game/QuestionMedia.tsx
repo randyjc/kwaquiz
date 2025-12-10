@@ -94,6 +94,7 @@ const QuestionMedia = ({
     if (el) {
       try {
         el.muted = true
+        el.load?.()
         await el.play()
         el.pause()
         el.currentTime = 0
@@ -163,25 +164,22 @@ const QuestionMedia = ({
 
     pendingRequest.current = request
     // Play immediately to avoid clock drift between clients and server
-    if (currentMedia.type === "audio") {
-      tryPlay(audioRef.current)
-    } else if (currentMedia.type === "video") {
-      tryPlay(videoRef.current)
+    const el =
+      currentMedia.type === "audio"
+        ? audioRef.current
+        : currentMedia.type === "video"
+          ? videoRef.current
+          : null
+    if (el) {
+      el.load?.()
+      tryPlay(el)
+      // fallback: retry shortly if still paused
+      fallbackTimer.current = setTimeout(() => {
+        if (el.paused || el.currentTime === 0) {
+          tryPlay(el)
+        }
+      }, 500)
     }
-
-    // fallback: retry shortly if still paused
-    fallbackTimer.current = setTimeout(() => {
-      const el =
-        currentMedia.type === "audio"
-          ? audioRef.current
-          : currentMedia.type === "video"
-            ? videoRef.current
-            : null
-      if (!el) return
-      if (el.paused || el.currentTime === 0) {
-        tryPlay(el)
-      }
-    }, 500)
   }
 
   useEffect(() => {
