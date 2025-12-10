@@ -65,49 +65,51 @@ const QuestionMedia = ({
   }
 
   const primeAutoplay = async () => {
+    setPromptEnable(false)
+    setAutoplayReady(true)
     try {
       await ensureUnlocked()
-      setAutoplayReady(true)
-      setPromptEnable(false)
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(STORAGE_KEY, "true")
-      }
-
-      const el =
-        media?.type === "audio"
-          ? audioRef.current
-          : media?.type === "video"
-            ? videoRef.current
-            : null
-
-      if (el) {
-        try {
-          el.muted = true
-          await el.play()
-          el.pause()
-          el.currentTime = 0
-          setTimeout(() => {
-            if (el) el.muted = false
-          }, 150)
-        } catch {
-          // ignore initial warmup failure
-          if (el) el.muted = false
-        }
-      }
-
-      // If we already have a pending sync request, replay it; otherwise attempt immediate play
-      if (pendingRequest.current && media) {
-        const req = pendingRequest.current
-        // If start time is in the past, bump slightly forward to avoid zero delay
-        const bumped =
-          req.startAt < Date.now() ? { ...req, startAt: Date.now() + 150 } : req
-        runPlay(bumped, media)
-      } else if (el && media && (media.type === "audio" || media.type === "video")) {
-        el.currentTime = 0
-        void el.play().catch(() => {})
-      }
     } catch {
-      setPromptEnable(true)
+      // ignore
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(STORAGE_KEY, "true")
+      } catch {
+        // ignore
+      }
+    }
+
+    const el =
+      media?.type === "audio"
+        ? audioRef.current
+        : media?.type === "video"
+          ? videoRef.current
+          : null
+
+    if (el) {
+      try {
+        el.muted = true
+        await el.play()
+        el.pause()
+        el.currentTime = 0
+        setTimeout(() => {
+          if (el) el.muted = false
+        }, 150)
+      } catch {
+        if (el) el.muted = false
+      }
+    }
+
+    if (pendingRequest.current && media) {
+      const req = pendingRequest.current
+      const bumped =
+        req.startAt < Date.now() ? { ...req, startAt: Date.now() + 300 } : req
+      runPlay(bumped, media)
+    } else if (el && media && (media.type === "audio" || media.type === "video")) {
+      el.currentTime = 0
+      void el.play().catch(() => {})
     }
   }
 
