@@ -23,6 +23,16 @@ const Game = () => {
   const { status, player, setPlayer, setGameId, setStatus, reset } =
     usePlayerStore()
   const { setQuestionStates } = useQuestionStore()
+  const handleLeave = () => {
+    reset()
+    setQuestionStates(null)
+    try {
+      localStorage.removeItem("last_game_id")
+      localStorage.removeItem("last_username")
+      localStorage.removeItem("last_points")
+    } catch {}
+    router.replace("/")
+  }
 
   useEvent("connect", () => {
     if (gameIdParam) {
@@ -120,7 +130,11 @@ const Game = () => {
       break
   }
 
-  return <GameWrapper statusName={status?.name}>{component}</GameWrapper>
+  return (
+    <GameWrapper statusName={status?.name} onLeave={handleLeave}>
+      {component}
+    </GameWrapper>
+  )
 }
 
 export default Game

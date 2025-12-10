@@ -26,6 +26,7 @@ type Props = PropsWithChildren & {
   breakActive?: boolean
   onToggleQuestionPreview?: () => void
   showQuestionPreview?: boolean
+  onLeave?: () => void
 }
 
 const GameWrapper = ({
@@ -43,6 +44,7 @@ const GameWrapper = ({
   breakActive,
   onToggleQuestionPreview,
   showQuestionPreview,
+  onLeave,
 }: Props) => {
   const { isConnected } = useSocket()
   const { player } = usePlayerStore()
@@ -116,12 +118,19 @@ const GameWrapper = ({
         </div>
       ) : (
         <>
-          <div className="flex w-full justify-between p-4">
-            {questionStates && (
-              <div className="shadow-inset flex items-center rounded-md bg-white p-2 px-4 text-lg font-bold text-black">
-                {`${questionStates.current} / ${questionStates.total}`}
-              </div>
-            )}
+          <div className="flex w-full items-start justify-between p-4">
+            <div className="flex items-center gap-3">
+              {onLeave && (
+                <Button className="bg-red-600 px-4" onClick={onLeave}>
+                  Leave game
+                </Button>
+              )}
+              {questionStates && (
+                <div className="shadow-inset flex items-center rounded-md bg-white p-2 px-4 text-lg font-bold text-black">
+                  {`${questionStates.current} / ${questionStates.total}`}
+                </div>
+              )}
+            </div>
 
             {manager && next && (
               <Button
