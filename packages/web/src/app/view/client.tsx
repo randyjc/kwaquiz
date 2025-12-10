@@ -157,14 +157,24 @@ const ViewerClient = () => {
                 />
               )}
               <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
-                {status.data.answers?.map((ans: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg bg-gray-100 px-4 py-3 text-lg font-semibold text-gray-900 shadow-inner"
-                  >
-                    {ans}
-                  </div>
-                ))}
+                {status.data.answers?.map((ans: string, idx: number) => {
+                  const isCorrect =
+                    typeof status.data.solution === "number" &&
+                    status.data.solution === idx
+                  return (
+                    <div
+                      key={idx}
+                      className={clsx(
+                        "rounded-lg px-4 py-3 text-lg font-semibold shadow-inner",
+                        isCorrect
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-900",
+                      )}
+                    >
+                      {ans}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           ) : status.name === STATUS.SHOW_PREPARED ? (

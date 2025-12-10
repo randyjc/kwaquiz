@@ -670,7 +670,8 @@ class Game {
       correct: question.solution,
       answers: question.answers,
       image: question.image,
-   media: question.media,
+      media: question.media,
+      solution: question.solution,
     })
 
     this.leaderboard = sortedPlayers
