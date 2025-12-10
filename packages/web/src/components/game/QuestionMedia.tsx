@@ -22,6 +22,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastNonce = useRef<number>(0)
   const playTimer = useRef<NodeJS.Timeout | null>(null)
+  const fallbackTimer = useRef<NodeJS.Timeout | null>(null)
   const pendingRequest = useRef<typeof playRequest | null>(null)
 
   useEffect(() => {
@@ -72,6 +73,10 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       clearTimeout(playTimer.current)
       playTimer.current = null
     }
+    if (fallbackTimer.current) {
+      clearTimeout(fallbackTimer.current)
+      fallbackTimer.current = null
+    }
 
     const tryPlay = async (el: HTMLMediaElement | null) => {
       if (!el) return
@@ -113,6 +118,23 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
         tryPlay(videoRef.current)
       }
     }, delay)
+
+    fallbackTimer.current = setTimeout(() => {
+      const el =
+        currentMedia.type === "audio"
+          ? audioRef.current
+          : currentMedia.type === "video"
+            ? videoRef.current
+            : null
+      if (!el) return
+      const stalled = el.paused || el.currentTime === 0
+      if (stalled && requireUserEnable) {
+        setPromptEnable(true)
+        pendingRequest.current = request
+        lastNonce.current = 0
+      }
+    }, delay + 2000)
+  }
   }
 
   useEffect(() => {
@@ -128,6 +150,10 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       if (playTimer.current) {
         clearTimeout(playTimer.current)
         playTimer.current = null
+      }
+      if (fallbackTimer.current) {
+        clearTimeout(fallbackTimer.current)
+        fallbackTimer.current = null
       }
     }
   }, [playRequest, media, autoplayReady, requireUserEnable])
