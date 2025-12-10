@@ -65,7 +65,6 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
   }
 
   const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
-    pendingRequest.current = null
     const { nonce, startAt } = request
     if (nonce === lastNonce.current) return
     lastNonce.current = nonce
@@ -81,6 +80,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
         el.pause()
         el.currentTime = 0
         await el.play()
+        pendingRequest.current = null
       } catch {
         try {
           el.muted = true
@@ -90,6 +90,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
           setTimeout(() => {
             el.muted = false
           }, 150)
+          pendingRequest.current = null
         } catch {
           if (requireUserEnable) {
             setPromptEnable(true)
@@ -100,6 +101,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       }
     }
 
+    pendingRequest.current = request
     const delay = Math.max(0, startAt - Date.now())
     playTimer.current = setTimeout(() => {
       playTimer.current = null
