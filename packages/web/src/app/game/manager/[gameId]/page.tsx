@@ -153,6 +153,7 @@ const ManagerGame = () => {
 
   const handleViewerToggle = () => {
     if (!gameId) return
+    setViewerMode((prev) => !prev)
     socket?.emit("manager:setViewerMode", { gameId, enabled: !viewerMode })
   }
 

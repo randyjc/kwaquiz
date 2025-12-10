@@ -1,8 +1,9 @@
 "use client"
 
 import { STATUS, Status } from "@rahoot/common/types/game/status"
-import QuestionMedia from "@rahoot/web/components/game/QuestionMedia"
+import Question from "@rahoot/web/components/game/states/Question"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
+import { useThemeStore } from "@rahoot/web/stores/theme"
 import { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 
@@ -10,6 +11,7 @@ type StatusPayload = { name: Status; data: any } | null
 
 const ViewerPage = () => {
   const { socket, isConnected } = useSocket()
+  const { backgroundUrl, setBackground, setBrandName } = useThemeStore()
   const [password, setPassword] = useState("")
   const [inviteCode, setInviteCode] = useState("")
   const [status, setStatus] = useState<StatusPayload>(null)
@@ -39,6 +41,26 @@ const ViewerPage = () => {
     }
   }, [socket])
 
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const res = await fetch("/api/theme", { cache: "no-store" })
+        const data = await res.json()
+        if (res.ok && data.theme) {
+          if (typeof data.theme.backgroundUrl === "string") {
+            setBackground(data.theme.backgroundUrl || null)
+          }
+          if (typeof data.theme.brandName === "string") {
+            setBrandName(data.theme.brandName)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load theme", error)
+      }
+    }
+    loadTheme()
+  }, [setBackground, setBrandName])
+
   const handleJoin = () => {
     if (!password || !inviteCode) {
       toast.error("Enter password and PIN")
@@ -62,85 +84,82 @@ const ViewerPage = () => {
     }
 
     switch (status.name) {
-      case STATUS.SHOW_QUESTION: {
-        const data: any = status.data
-        const media =
-          data.media || (data.image ? { type: "image", url: data.image } : undefined)
+      case STATUS.SHOW_QUESTION:
+        return <Question data={status.data} forceShowMedia />
+      case STATUS.SELECT_ANSWER:
         return (
-          <div className="flex flex-col items-center gap-6">
-            <h2 className="text-center text-4xl font-bold text-white drop-shadow">
-              {data.question}
+          <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-4 shadow">
+            <h2 className="text-center text-3xl font-bold text-gray-900">
+              {status.data.question}
             </h2>
-            <QuestionMedia media={media} alt={data.question} />
-          </div>
-        )
-      }
-      case STATUS.SELECT_ANSWER: {
-        const data: any = status.data
-        const media =
-          data.media || (data.image ? { type: "image", url: data.image } : undefined)
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h2 className="text-center text-4xl font-bold text-white drop-shadow">
-              {data.question}
-            </h2>
-            <QuestionMedia media={media} alt={data.question} />
-            <div className="w-full max-w-4xl rounded-md bg-white/90 p-4 shadow">
-              <h3 className="mb-3 text-lg font-semibold text-gray-800">Answers</h3>
-              <ul className="space-y-2 text-gray-900">
-                {data.answers?.map((ans: string, idx: number) => (
-                  <li
-                    key={idx}
-                    className="rounded-md bg-gray-100 px-3 py-2 text-base font-semibold"
-                  >
-                    {ans}
-                  </li>
-                ))}
-              </ul>
+            {status.data.media || status.data.image ? (
+              <Question
+                data={{ ...status.data, cooldown: 0, showQuestion: true }}
+                forceShowMedia
+              />
+            ) : null}
+            <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
+              {status.data.answers?.map((ans: string, idx: number) => (
+                <div
+                  key={idx}
+                  className="rounded-lg bg-gray-100 px-4 py-3 text-lg font-semibold text-gray-900 shadow-inner"
+                >
+                  {ans}
+                </div>
+              ))}
             </div>
           </div>
         )
-      }
-      case STATUS.SHOW_PREPARED: {
-        const data: any = status.data
+      case STATUS.SHOW_PREPARED:
         return (
           <div className="rounded-md bg-white/90 p-6 text-center shadow">
             <p className="text-lg font-semibold text-gray-800">
-              Question {data.questionNumber} is coming up…
+              Question {status.data.questionNumber} is coming up…
             </p>
           </div>
         )
-      }
-      case STATUS.SHOW_START: {
-        const data: any = status.data
+      case STATUS.SHOW_START:
         return (
           <div className="rounded-md bg-white/90 p-6 text-center shadow">
             <p className="text-lg font-semibold text-gray-800">
-              Starting {data.subject} in {data.time}s
+              Starting {status.data.subject} in {status.data.time}s
             </p>
           </div>
         )
-      }
-      case STATUS.WAIT: {
-        const data: any = status.data
+      case STATUS.WAIT:
         return (
           <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">{data.text}</p>
+            <p className="text-lg font-semibold text-gray-800">
+              {status.data.text}
+            </p>
           </div>
         )
-      }
+      case STATUS.SHOW_RESULT:
+      case STATUS.SHOW_LEADERBOARD:
+      case STATUS.FINISHED:
       default:
         return (
           <div className="rounded-md bg-white/90 p-6 text-center shadow">
-            <p className="text-lg font-semibold text-gray-800">Waiting for updates…</p>
+            <p className="text-lg font-semibold text-gray-800">
+              Waiting for updates…
+            </p>
           </div>
         )
     }
   }, [status])
 
+  const resolvedBackground = backgroundUrl || "/background.webp"
+
   return (
-    <div className="min-h-screen bg-black/80 bg-[radial-gradient(circle_at_top_left,_rgba(255,165,0,0.15),_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(255,165,0,0.2),_transparent_45%)]">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
+    <div
+      className="min-h-screen w-full bg-black/70"
+      style={{
+        backgroundImage: `url(${resolvedBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
         <div className="rounded-md bg-white/90 p-4 shadow">
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <input
@@ -170,8 +189,7 @@ const ViewerPage = () => {
             )}
           </div>
           <p className="text-xs text-gray-600">
-            Use the manager password to authorize the big-screen viewer. Media will appear here when the
-            manager enables viewer mode.
+            Use the manager password to authorize the big-screen viewer. Media appears here in viewer mode.
           </p>
         </div>
 
