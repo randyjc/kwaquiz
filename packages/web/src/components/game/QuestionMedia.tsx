@@ -15,6 +15,7 @@ type Props = {
 const STORAGE_KEY = "kwaquiz-autoplay-enabled"
 let audioCtx: AudioContext | null = null
 let globalUnlocked = false
+const isIOS = typeof navigator !== "undefined" && /iP(hone|ad|od)/.test(navigator.userAgent)
 
 const QuestionMedia = ({
   media,
@@ -37,11 +38,14 @@ const QuestionMedia = ({
   useEffect(() => {
     if (typeof window === "undefined") return
     const stored = window.sessionStorage.getItem(STORAGE_KEY)
-    if (stored === "true") {
+    const alreadyAllowed = stored === "true"
+    if (alreadyAllowed && !isIOS) {
       setAutoplayReady(true)
       setPromptEnable(false)
     } else if (requireUserEnable) {
+      // On iOS we still need a fresh gesture each load
       setPromptEnable(true)
+      setAutoplayReady(false)
     }
   }, [requireUserEnable])
 
