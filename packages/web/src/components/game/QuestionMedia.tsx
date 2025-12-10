@@ -17,12 +17,31 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
-    if (!media) return
-    if (media.type === "audio" && audioRef.current && playRequest !== undefined) {
-      audioRef.current.play().catch(() => {})
+    if (!media || playRequest === undefined) return
+
+    const tryPlay = async (el: HTMLMediaElement | null) => {
+      if (!el) return
+      try {
+        el.currentTime = 0
+        el.load()
+        await el.play()
+      } catch (err) {
+        try {
+          el.muted = true
+          el.currentTime = 0
+          el.load()
+          await el.play()
+          el.muted = false
+        } catch {
+          // ignore autoplay failures; user can tap play
+        }
+      }
     }
-    if (media.type === "video" && videoRef.current && playRequest !== undefined) {
-      videoRef.current.play().catch(() => {})
+
+    if (media.type === "audio") {
+      tryPlay(audioRef.current)
+    } else if (media.type === "video") {
+      tryPlay(videoRef.current)
     }
   }, [playRequest, media])
 
