@@ -37,9 +37,10 @@ const QuestionMedia = ({
   useEffect(() => {
     if (typeof window === "undefined") return
     const stored = window.sessionStorage.getItem(STORAGE_KEY)
-    if (stored === "true") {
+    if (stored === "true" && globalUnlocked) {
       setAutoplayReady(true)
     } else if (requireUserEnable) {
+      setAutoplayReady(false)
       setPromptEnable(true)
     }
   }, [requireUserEnable])
@@ -131,8 +132,9 @@ const QuestionMedia = ({
           lastNonce.current = nonce
           pendingRequest.current = null
         } catch {
-          // If we never had consent, prompt; otherwise keep consent and let user tap play manually
-          if (requireUserEnable && !autoplayReady) {
+          // Autoplay blocked. Force prompt and reset readiness so user can re-allow.
+          if (requireUserEnable) {
+            setAutoplayReady(false)
             setPromptEnable(true)
             pendingRequest.current = request
             lastNonce.current = 0
@@ -162,7 +164,8 @@ const QuestionMedia = ({
             : null
       if (!el) return
       const stalled = el.paused || el.currentTime === 0
-      if (stalled && requireUserEnable && !autoplayReady) {
+      if (stalled && requireUserEnable) {
+        setAutoplayReady(false)
         setPromptEnable(true)
         pendingRequest.current = request
         lastNonce.current = 0
