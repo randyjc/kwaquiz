@@ -18,11 +18,14 @@ type Props = PropsWithChildren & {
   onPause?: () => void
   paused?: boolean
   showPause?: boolean
+  onPlayMedia?: () => void
   onEnd?: () => void
   players?: { id: string; username: string; connected: boolean }[]
   manager?: boolean
   onBreakToggle?: () => void
   breakActive?: boolean
+  onToggleQuestionPreview?: () => void
+  showQuestionPreview?: boolean
 }
 
 const GameWrapper = ({
@@ -32,11 +35,14 @@ const GameWrapper = ({
   onPause,
   paused,
   showPause,
+  onPlayMedia,
   onEnd,
   players,
   manager,
   onBreakToggle,
   breakActive,
+  onToggleQuestionPreview,
+  showQuestionPreview,
 }: Props) => {
   const { isConnected } = useSocket()
   const { player } = usePlayerStore()
@@ -139,6 +145,17 @@ const GameWrapper = ({
               </Button>
             )}
 
+            {manager && onPlayMedia && (
+              <Button
+                className={clsx("self-end bg-white px-4 text-black!", {
+                  "pointer-events-none": isDisabled,
+                })}
+                onClick={onPlayMedia}
+              >
+                Play media
+              </Button>
+            )}
+
             {manager && onBreakToggle && (
               <Button
                 className={clsx("self-end bg-white px-4 text-black!", {
@@ -147,6 +164,17 @@ const GameWrapper = ({
                 onClick={onBreakToggle}
               >
                 {breakActive ? "Resume game" : "Break"}
+              </Button>
+            )}
+
+            {manager && onToggleQuestionPreview && (
+              <Button
+                className={clsx("self-end bg-white px-4 text-black!", {
+                  "pointer-events-none": isDisabled,
+                })}
+                onClick={onToggleQuestionPreview}
+              >
+                {showQuestionPreview ? "Hide question" : "Show question"}
               </Button>
             )}
 

@@ -47,6 +47,7 @@ class Game {
     resolve: (() => void) | null
   }
   breakActive: boolean
+  showQuestionPreview: boolean
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -86,6 +87,7 @@ class Game {
       resolve: null,
     }
     this.breakActive = false
+    this.showQuestionPreview = true
 
     const roomInvite = createInviteCode()
     this.inviteCode = roomInvite
@@ -140,6 +142,10 @@ class Game {
       resolve: null,
     }
     game.breakActive = snapshot.breakActive || false
+    game.showQuestionPreview =
+      typeof snapshot.showQuestionPreview === "boolean"
+        ? snapshot.showQuestionPreview
+        : true
 
     if (game.cooldown.active && game.cooldown.remaining > 0 && !game.cooldown.paused) {
       game.startCooldown(game.cooldown.remaining)
@@ -197,6 +203,7 @@ class Game {
         remaining: this.cooldown.remaining,
       },
       breakActive: this.breakActive,
+      showQuestionPreview: this.showQuestionPreview,
     }
   }
 
@@ -485,6 +492,14 @@ class Game {
     this.persist()
   }
 
+  setQuestionPreview(socket: Socket, show: boolean) {
+    if (this.manager.id !== socket.id) {
+      return
+    }
+    this.showQuestionPreview = show
+    this.persist()
+  }
+
   skipQuestionIntro(socket: Socket) {
     if (this.manager.id !== socket.id) {
       return
@@ -548,14 +563,20 @@ class Game {
       return
     }
 
+    const effectiveCooldown =
+      question.media && (question.media.type === "audio" || question.media.type === "video")
+        ? Math.max(question.cooldown, 30)
+        : question.cooldown
+
     this.broadcastStatus(STATUS.SHOW_QUESTION, {
       question: question.question,
       image: question.image,
       media: question.media,
-      cooldown: question.cooldown,
+      cooldown: effectiveCooldown,
+      showQuestion: this.showQuestionPreview,
     })
 
-    await this.startCooldown(question.cooldown)
+    await this.startCooldown(effectiveCooldown)
 
     if (!this.started) {
       return

@@ -23,6 +23,7 @@ export type CommonStatusDataMap = {
     image?: string
     media?: QuestionMedia
     cooldown: number
+    showQuestion: boolean
   }
   SELECT_ANSWER: {
     question: string

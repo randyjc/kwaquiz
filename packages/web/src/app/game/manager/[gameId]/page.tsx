@@ -27,11 +27,26 @@ const ManagerGame = () => {
   const { setQuestionStates } = useQuestionStore()
   const [cooldownPaused, setCooldownPaused] = useState(false)
   const [breakActive, setBreakActive] = useState(false)
+  const [showQuestionPreview, setShowQuestionPreview] = useState(true)
+  const [hasPlayableMedia, setHasPlayableMedia] = useState(false)
   const { players } = useManagerStore()
 
   useEvent("game:status", ({ name, data }) => {
     if (name in GAME_STATE_COMPONENTS_MANAGER) {
       setStatus(name, data)
+      if (
+        name === STATUS.SHOW_QUESTION &&
+        typeof (data as any).showQuestion === "boolean"
+      ) {
+        setShowQuestionPreview((data as any).showQuestion)
+      }
+      const media =
+        (data as any)?.media || (data as any)?.image
+          ? (data as any)?.media
+          : null
+      setHasPlayableMedia(
+        Boolean(media && (media.type === "audio" || media.type === "video")),
+      )
     }
   })
 
@@ -48,6 +63,12 @@ const ManagerGame = () => {
       setStatus(status.name, status.data)
       setPlayers(players)
       setQuestionStates(currentQuestion)
+      if (
+        status.name === STATUS.SHOW_QUESTION &&
+        typeof (status.data as any).showQuestion === "boolean"
+      ) {
+        setShowQuestionPreview((status.data as any).showQuestion)
+      }
     },
   )
 
@@ -124,6 +145,18 @@ const ManagerGame = () => {
     socket?.emit("manager:setBreak", { gameId, active: !breakActive })
   }
 
+  const handleToggleQuestionPreview = () => {
+    if (!gameId) return
+    const next = !showQuestionPreview
+    setShowQuestionPreview(next)
+    socket?.emit("manager:setQuestionPreview", { gameId, show: next })
+  }
+
+  const handlePlayMedia = () => {
+    if (!gameId || !hasPlayableMedia) return
+    socket?.emit("manager:playMedia", { gameId })
+  }
+
   const handleEndGame = () => {
     if (!gameId) return
     socket?.emit("manager:endGame", { gameId })
@@ -184,6 +217,9 @@ const ManagerGame = () => {
       }
       onBreakToggle={handleBreakToggle}
       breakActive={breakActive}
+      onPlayMedia={hasPlayableMedia ? handlePlayMedia : undefined}
+      onToggleQuestionPreview={handleToggleQuestionPreview}
+      showQuestionPreview={showQuestionPreview}
       onEnd={handleEndGame}
       players={players}
       manager

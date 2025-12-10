@@ -81,6 +81,7 @@ export interface ClientToServerEvents {
   "manager:pauseCooldown": (_message: MessageGameId) => void
   "manager:resumeCooldown": (_message: MessageGameId) => void
   "manager:setBreak": (_message: { gameId?: string; active: boolean }) => void
+  "manager:setQuestionPreview": (_message: { gameId?: string; show: boolean }) => void
   "manager:endGame": (_message: MessageGameId) => void
   "manager:skipQuestionIntro": (_message: MessageGameId) => void
   "manager:nextQuestion": (_message: MessageGameId) => void
