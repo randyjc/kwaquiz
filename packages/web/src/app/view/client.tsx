@@ -5,6 +5,7 @@ import QuestionMedia from "@rahoot/web/components/game/QuestionMedia"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 import background from "@rahoot/web/assets/background.webp"
+import clsx from "clsx"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 
