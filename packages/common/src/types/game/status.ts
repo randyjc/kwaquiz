@@ -24,6 +24,7 @@ export type CommonStatusDataMap = {
     media?: QuestionMedia
     cooldown: number
     showQuestion: boolean
+    syncMedia?: boolean
   }
   SELECT_ANSWER: {
     question: string

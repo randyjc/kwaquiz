@@ -22,6 +22,7 @@ export type Quizz = {
     solution: number
     cooldown: number
     time: number
+    syncMedia?: boolean
   }[]
 }
 

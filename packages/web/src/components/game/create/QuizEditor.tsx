@@ -38,6 +38,7 @@ const blankQuestion = (): EditableQuestion => ({
   solution: 0,
   cooldown: 5,
   time: 20,
+  syncMedia: true,
 })
 
 const mediaTypes: QuestionMedia["type"][] = ["image", "audio", "video"]
@@ -222,6 +223,10 @@ const QuizEditor = ({
     updateQuestion(qIndex, {
       media,
       image: media?.type === "image" ? media.url : undefined,
+      syncMedia:
+        media && (media.type === "audio" || media.type === "video")
+          ? draft.questions[qIndex].syncMedia !== false
+          : draft.questions[qIndex].syncMedia,
     })
   }
 
@@ -275,13 +280,20 @@ const QuizEditor = ({
     const nextMedia: QuestionMedia = {
       type: question.media.type,
       url,
-    }
-
-    if (question.media.fileName && url.includes(question.media.fileName)) {
-      nextMedia.fileName = question.media.fileName
+      fileName: question.media.fileName,
     }
 
     setQuestionMedia(qIndex, nextMedia)
+  }
+
+  const handleSyncMediaToggle = (qIndex: number, value: boolean) => {
+    if (!draft) return
+    const question = draft.questions[qIndex]
+    if (!question.media || (question.media.type !== "audio" && question.media.type !== "video")) {
+      toast.error("Sync is only available for audio/video questions")
+      return
+    }
+    updateQuestion(qIndex, { syncMedia: value })
   }
 
   const clearQuestionMedia = (qIndex: number) => {
@@ -667,6 +679,17 @@ const QuizEditor = ({
                     <p className="text-xs text-gray-500">
                       Files are stored locally and served from /media. Pick a type first.
                     </p>
+
+                    {(question.media?.type === "audio" || question.media?.type === "video") && (
+                      <div className="flex items-center gap-2 rounded-sm bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={question.syncMedia !== false}
+                          onChange={(e) => handleSyncMediaToggle(qIndex, e.target.checked)}
+                        />
+                        <span>Manager controls media playback</span>
+                      </div>
+                    )}
 
                     {question.media && (
                       <div className="rounded-md border border-gray-200 bg-gray-50 p-2">

@@ -40,12 +40,17 @@ const ManagerGame = () => {
       ) {
         setShowQuestionPreview((data as any).showQuestion)
       }
-      const media =
-        (data as any)?.media || (data as any)?.image
-          ? (data as any)?.media
-          : null
+      const media = (data as any)?.media
+      const syncFlag =
+        name === STATUS.SHOW_QUESTION && typeof (data as any).syncMedia === "boolean"
+          ? (data as any).syncMedia
+          : true
       setHasPlayableMedia(
-        Boolean(media && (media.type === "audio" || media.type === "video")),
+        Boolean(
+          media &&
+            (media.type === "audio" || media.type === "video") &&
+            syncFlag !== false,
+        ),
       )
     }
   })
@@ -69,6 +74,19 @@ const ManagerGame = () => {
       ) {
         setShowQuestionPreview((status.data as any).showQuestion)
       }
+      const media = (status.data as any)?.media
+      const syncFlag =
+        status.name === STATUS.SHOW_QUESTION &&
+        typeof (status.data as any).syncMedia === "boolean"
+          ? (status.data as any).syncMedia
+          : true
+      setHasPlayableMedia(
+        Boolean(
+          media &&
+            (media.type === "audio" || media.type === "video") &&
+            syncFlag !== false,
+        ),
+      )
     },
   )
 

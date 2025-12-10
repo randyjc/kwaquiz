@@ -574,6 +574,7 @@ class Game {
       media: question.media,
       cooldown: effectiveCooldown,
       showQuestion: this.showQuestionPreview,
+      syncMedia: question.syncMedia !== false,
     })
 
     await this.startCooldown(effectiveCooldown)
@@ -768,6 +769,23 @@ class Game {
     this.abortCooldown()
     this.io.to(this.gameId).emit("game:reset", "Game ended by manager")
     registry.removeGame(this.gameId)
+  }
+
+  playMedia(socket: Socket) {
+    if (this.manager.id !== socket.id) {
+      return
+    }
+    const question = this.quizz.questions[this.round.currentQuestion]
+    if (
+      !question?.media ||
+      (question.media.type !== "audio" && question.media.type !== "video")
+    ) {
+      return
+    }
+    if (question.syncMedia === false) {
+      return
+    }
+    this.io.to(this.gameId).emit("game:mediaPlay")
   }
 }
 
