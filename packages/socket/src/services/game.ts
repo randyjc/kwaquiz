@@ -582,17 +582,22 @@ class Game {
       return
     }
 
+    const hasMedia =
+      question.media &&
+      (question.media.type === "audio" || question.media.type === "video")
+    const effectiveCooldown = hasMedia ? 0 : question.cooldown
+
     this.broadcastStatus(STATUS.SHOW_QUESTION, {
       question: question.question,
       image: question.image,
       media: question.media,
-      cooldown: question.cooldown,
+      cooldown: effectiveCooldown,
       showQuestion: this.showQuestionPreview,
       viewerMode: this.viewerMode,
     })
 
-    if (question.cooldown > 0) {
-      await this.startCooldown(question.cooldown)
+    if (effectiveCooldown > 0) {
+      await this.startCooldown(effectiveCooldown)
     }
 
     if (!this.started) {
