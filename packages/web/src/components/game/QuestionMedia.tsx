@@ -268,7 +268,7 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative px-4")}>
           {promptEnable && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
+            <div className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60" onClick={(e) => e.stopPropagation()}>
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
                 <p className="text-sm text-white/90">
@@ -276,7 +276,7 @@ const QuestionMedia = ({
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
                   onClick={primeAutoplay}
                 >
                   Allow audio
@@ -302,7 +302,7 @@ const QuestionMedia = ({
       return (
         <div className={clsx(containerClass, "relative")}>
           {promptEnable && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
+            <div className="absolute inset-0 z-50 flex items-center justify-center rounded-md bg-black/60" onClick={(e) => e.stopPropagation()}>
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
                 <p className="text-sm text-white/90">
@@ -310,7 +310,7 @@ const QuestionMedia = ({
                 </p>
                 <button
                   type="button"
-                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow"
+                  className="rounded-full bg-primary px-4 py-2 font-semibold text-white shadow outline-none focus:ring-2 focus:ring-white"
                   onClick={primeAutoplay}
                 >
                   Allow video
