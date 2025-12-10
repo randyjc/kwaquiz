@@ -107,8 +107,7 @@ const QuestionMedia = ({
 
     if (pendingRequest.current && media) {
       const req = pendingRequest.current
-      const bumped =
-        req.startAt < Date.now() ? { ...req, startAt: Date.now() + 300 } : req
+      const bumped = req.startAt < Date.now() ? { ...req, startAt: Date.now() + 300 } : req
       runPlay(bumped, media)
     } else if (el && media && (media.type === "audio" || media.type === "video")) {
       el.currentTime = 0
@@ -163,8 +162,8 @@ const QuestionMedia = ({
     }
 
     pendingRequest.current = request
-    // If the start time is already in the past, nudge forward a bit
-    const delay = Math.max(0, startAt - Date.now() + 120)
+    // Align to requested start; if already passed, play asap
+    const delay = Math.max(0, startAt - Date.now())
     playTimer.current = setTimeout(() => {
       playTimer.current = null
       if (currentMedia.type === "audio") {
@@ -228,6 +227,13 @@ const QuestionMedia = ({
           : null
 
     if (!mediaEl) return
+
+    // Force load media on source change so Safari has it ready before play
+    try {
+      mediaEl.load?.()
+    } catch {
+      // ignore
+    }
 
     const handleReady = () => {
       if (!pendingRequest.current) return
