@@ -18,14 +18,23 @@ const ViewerClient = () => {
   const [inviteCode, setInviteCode] = useState("")
   const [status, setStatus] = useState<StatusPayload>(null)
   const [joinedGame, setJoinedGame] = useState<string | null>(null)
+  const [lastResponses, setLastResponses] = useState<any | null>(null)
 
   useEvent("game:status", (incoming) => {
     setStatus(incoming)
+    if (incoming?.name === STATUS.SHOW_RESPONSES) {
+      setLastResponses(incoming.data)
+    }
   })
 
   useEvent("viewer:joined", ({ gameId, status }) => {
     setJoinedGame(gameId)
-    if (status) setStatus(status)
+    if (status) {
+      setStatus(status)
+      if (status.name === STATUS.SHOW_RESPONSES) {
+        setLastResponses(status.data)
+      }
+    }
     toast.success("Viewer connected")
   })
 
@@ -35,6 +44,7 @@ const ViewerClient = () => {
     toast.error(msg)
     setJoinedGame(null)
     setStatus(null)
+    setLastResponses(null)
   })
 
   useEffect(() => {
@@ -75,6 +85,18 @@ const ViewerClient = () => {
   }
 
   const resolvedBackground = backgroundUrl || background.src
+
+  // Prefer live status; if we drop back to WAIT after responses, keep showing the last results
+  let viewStatus: StatusPayload = status
+  if (!viewStatus && lastResponses) {
+    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
+  } else if (
+    viewStatus?.name === STATUS.WAIT &&
+    lastResponses &&
+    viewStatus.data?.text
+  ) {
+    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
+  }
 
   return (
     <div
@@ -120,48 +142,48 @@ const ViewerClient = () => {
         </div>
 
         <div className="flex w-full justify-center">
-          {!status ? (
+          {!viewStatus ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
               <p className="text-lg font-semibold text-gray-800">
                 Enter PIN and manager password to start viewing.
               </p>
             </div>
-          ) : status.name === STATUS.SHOW_QUESTION ? (
+          ) : viewStatus.name === STATUS.SHOW_QUESTION ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-6 rounded-lg bg-white/90 p-6 shadow">
               <h2 className="text-center text-3xl font-bold text-gray-900">
-                {status.data.question}
+                {viewStatus.data.question}
               </h2>
               <QuestionMedia
                 media={
-                  status.data.media ||
-                  (status.data.image
-                    ? { type: "image", url: status.data.image }
+                  viewStatus.data.media ||
+                  (viewStatus.data.image
+                    ? { type: "image", url: viewStatus.data.image }
                     : undefined)
                 }
-                alt={status.data.question}
+                alt={viewStatus.data.question}
               />
             </div>
-          ) : status.name === STATUS.SELECT_ANSWER ? (
+          ) : viewStatus.name === STATUS.SELECT_ANSWER ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-6 shadow">
               <h2 className="text-center text-3xl font-bold text-gray-900">
-                {status.data.question}
+                {viewStatus.data.question}
               </h2>
-              {(status.data.media || status.data.image) && (
+              {(viewStatus.data.media || viewStatus.data.image) && (
                 <QuestionMedia
                   media={
-                    status.data.media ||
-                    (status.data.image
-                      ? { type: "image", url: status.data.image }
+                    viewStatus.data.media ||
+                    (viewStatus.data.image
+                      ? { type: "image", url: viewStatus.data.image }
                       : undefined)
                   }
-                  alt={status.data.question}
+                  alt={viewStatus.data.question}
                 />
               )}
               <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
-                {status.data.answers?.map((ans: string, idx: number) => {
+                {viewStatus.data.answers?.map((ans: string, idx: number) => {
                   const isCorrect =
-                    typeof status.data.solution === "number" &&
-                    status.data.solution === idx
+                    typeof viewStatus.data.solution === "number" &&
+                    viewStatus.data.solution === idx
                   return (
                     <div
                       key={idx}
@@ -178,33 +200,33 @@ const ViewerClient = () => {
                 })}
               </div>
             </div>
-          ) : status.name === STATUS.SHOW_PREPARED ? (
+          ) : viewStatus.name === STATUS.SHOW_PREPARED ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
               <p className="text-lg font-semibold text-gray-800">
-                Question {status.data.questionNumber} is coming up…
+                Question {viewStatus.data.questionNumber} is coming up…
               </p>
             </div>
-          ) : status.name === STATUS.SHOW_RESPONSES ? (
+          ) : viewStatus.name === STATUS.SHOW_RESPONSES ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-6 shadow">
               <h2 className="text-center text-3xl font-bold text-gray-900">
-                {status.data.question}
+                {viewStatus.data.question}
               </h2>
-              {(status.data.media || status.data.image) && (
+              {(viewStatus.data.media || viewStatus.data.image) && (
                 <QuestionMedia
                   media={
-                    status.data.media ||
-                    (status.data.image
-                      ? { type: "image", url: status.data.image }
+                    viewStatus.data.media ||
+                    (viewStatus.data.image
+                      ? { type: "image", url: viewStatus.data.image }
                       : undefined)
                   }
-                  alt={status.data.question}
+                  alt={viewStatus.data.question}
                 />
               )}
               <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
-                {status.data.answers?.map((ans: string, idx: number) => {
+                {viewStatus.data.answers?.map((ans: string, idx: number) => {
                   const isCorrect =
-                    typeof status.data.solution === "number" &&
-                    status.data.solution === idx
+                    typeof viewStatus.data.solution === "number" &&
+                    viewStatus.data.solution === idx
                   return (
                     <div
                       key={idx}
@@ -221,16 +243,16 @@ const ViewerClient = () => {
                 })}
               </div>
             </div>
-          ) : status.name === STATUS.SHOW_START ? (
+          ) : viewStatus.name === STATUS.SHOW_START ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
               <p className="text-lg font-semibold text-gray-800">
-                Starting {status.data.subject} in {status.data.time}s
+                Starting {viewStatus.data.subject} in {viewStatus.data.time}s
               </p>
             </div>
-          ) : status.name === STATUS.WAIT ? (
+          ) : viewStatus.name === STATUS.WAIT ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
               <p className="text-lg font-semibold text-gray-800">
-                {status.data.text}
+                {viewStatus.data.text}
               </p>
             </div>
           ) : (
