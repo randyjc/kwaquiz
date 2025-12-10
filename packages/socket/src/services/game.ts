@@ -524,6 +524,10 @@ class Game {
 
   async newRound() {
     const question = this.quizz.questions[this.round.currentQuestion]
+    const effectiveCooldown =
+      question.media && (question.media.type === "audio" || question.media.type === "video")
+        ? Math.max(question.cooldown, 30)
+        : question.cooldown
 
     if (!this.started) {
       return
@@ -552,10 +556,10 @@ class Game {
       question: question.question,
       image: question.image,
       media: question.media,
-      cooldown: question.cooldown,
+      cooldown: effectiveCooldown,
     })
 
-    await this.startCooldown(question.cooldown)
+    await this.startCooldown(effectiveCooldown)
 
     if (!this.started) {
       return
@@ -747,6 +751,17 @@ class Game {
     this.abortCooldown()
     this.io.to(this.gameId).emit("game:reset", "Game ended by manager")
     registry.removeGame(this.gameId)
+  }
+
+  playMedia(socket: Socket) {
+    if (this.manager.id !== socket.id) {
+      return
+    }
+    const question = this.quizz.questions[this.round.currentQuestion]
+    if (!question?.media || (question.media.type !== "audio" && question.media.type !== "video")) {
+      return
+    }
+    this.io.to(this.gameId).emit("game:mediaPlay")
   }
 }
 

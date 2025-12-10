@@ -33,6 +33,7 @@ export interface ServerToClientEvents {
   "game:cooldown": (_count: number) => void
   "game:cooldownPause": (_paused: boolean) => void
   "game:reset": (_message: string) => void
+  "game:mediaPlay": () => void
   "game:updateQuestion": (_data: { current: number; total: number }) => void
   "game:playerAnswer": (_count: number) => void
   "game:break": (_active: boolean) => void
@@ -81,6 +82,7 @@ export interface ClientToServerEvents {
   "manager:pauseCooldown": (_message: MessageGameId) => void
   "manager:resumeCooldown": (_message: MessageGameId) => void
   "manager:setBreak": (_message: { gameId?: string; active: boolean }) => void
+  "manager:playMedia": (_message: MessageGameId) => void
   "manager:endGame": (_message: MessageGameId) => void
   "manager:skipQuestionIntro": (_message: MessageGameId) => void
   "manager:nextQuestion": (_message: MessageGameId) => void

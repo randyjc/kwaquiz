@@ -18,6 +18,7 @@ type Props = PropsWithChildren & {
   onPause?: () => void
   paused?: boolean
   showPause?: boolean
+  onPlayMedia?: () => void
   onEnd?: () => void
   players?: { id: string; username: string; connected: boolean }[]
   manager?: boolean
@@ -32,6 +33,7 @@ const GameWrapper = ({
   onPause,
   paused,
   showPause,
+  onPlayMedia,
   onEnd,
   players,
   manager,
@@ -136,6 +138,17 @@ const GameWrapper = ({
                 onClick={onPause}
               >
                 {paused ? "Resume" : "Pause"}
+              </Button>
+            )}
+
+            {manager && onPlayMedia && (
+              <Button
+                className={clsx("self-end bg-white px-4 text-black!", {
+                  "pointer-events-none": isDisabled,
+                })}
+                onClick={onPlayMedia}
+              >
+                Play media
               </Button>
             )}
 

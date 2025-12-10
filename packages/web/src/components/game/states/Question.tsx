@@ -15,6 +15,7 @@ const Question = ({ data: { question, image, media, cooldown } }: Props) => {
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
   const [paused, setPaused] = useState(false)
+  const [playRequest, setPlayRequest] = useState(0)
 
   useEffect(() => {
     sfxShow()
@@ -26,6 +27,10 @@ const Question = ({ data: { question, image, media, cooldown } }: Props) => {
 
   useEvent("game:cooldownPause", (isPaused) => {
     setPaused(isPaused)
+  })
+
+  useEvent("game:mediaPlay", () => {
+    setPlayRequest((prev) => prev + 1)
   })
 
   const percent = Math.max(0, Math.min(100, (seconds / cooldown) * 100))
@@ -40,6 +45,7 @@ const Question = ({ data: { question, image, media, cooldown } }: Props) => {
         <QuestionMedia
           media={media || (image ? { type: "image", url: image } : undefined)}
           alt={question}
+          playRequest={playRequest}
         />
       </div>
       <div className="mb-20 h-4 w-full max-w-4xl self-start overflow-hidden rounded-full bg-white/30">

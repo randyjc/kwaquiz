@@ -234,6 +234,10 @@ io.on("connection", (socket) => {
     withGame(gameId, socket, (game) => game.resumeCooldown(socket))
   )
 
+  socket.on("manager:playMedia", ({ gameId }) =>
+    withGame(gameId, socket, (game) => game.playMedia(socket))
+  )
+
   socket.on("manager:setBreak", ({ gameId, active }) =>
     withGame(gameId, socket, (game) => game.setBreak(socket, active))
   )

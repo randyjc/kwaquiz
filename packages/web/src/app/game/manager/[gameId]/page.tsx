@@ -27,11 +27,19 @@ const ManagerGame = () => {
   const { setQuestionStates } = useQuestionStore()
   const [cooldownPaused, setCooldownPaused] = useState(false)
   const [breakActive, setBreakActive] = useState(false)
+  const [hasPlayableMedia, setHasPlayableMedia] = useState(false)
   const { players } = useManagerStore()
 
   useEvent("game:status", ({ name, data }) => {
     if (name in GAME_STATE_COMPONENTS_MANAGER) {
       setStatus(name, data)
+      const media =
+        (data as any)?.media || (data as any)?.image
+          ? (data as any)?.media
+          : null
+      setHasPlayableMedia(
+        Boolean(media && (media.type === "audio" || media.type === "video")),
+      )
     }
   })
 
@@ -76,6 +84,11 @@ const ManagerGame = () => {
 
   useEvent("game:break", (active) => setBreakActive(active))
   useEvent("manager:break", (active) => setBreakActive(active))
+
+  const handlePlayMedia = () => {
+    if (!gameId || !hasPlayableMedia) return
+    socket?.emit("manager:playMedia", { gameId })
+  }
 
   const handleSkip = () => {
     if (!gameId) {
@@ -184,6 +197,7 @@ const ManagerGame = () => {
       }
       onBreakToggle={handleBreakToggle}
       breakActive={breakActive}
+      onPlayMedia={hasPlayableMedia ? handlePlayMedia : undefined}
       onEnd={handleEndGame}
       players={players}
       manager
