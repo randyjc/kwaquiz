@@ -4,6 +4,7 @@ import { STATUS, Status } from "@rahoot/common/types/game/status"
 import Question from "@rahoot/web/components/game/states/Question"
 import { useEvent, useSocket } from "@rahoot/web/contexts/socketProvider"
 import { useThemeStore } from "@rahoot/web/stores/theme"
+import background from "@rahoot/web/assets/background.webp"
 import { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 
@@ -148,7 +149,7 @@ const ViewerClient = () => {
     }
   }, [status])
 
-  const resolvedBackground = backgroundUrl || "/background.webp"
+  const resolvedBackground = backgroundUrl || background.src
 
   return (
     <div
