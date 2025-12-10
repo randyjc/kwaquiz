@@ -17,7 +17,7 @@ const Question = ({
   const [sfxShow] = useSound(SFX_SHOW_SOUND, { volume: 0.5 })
   const [seconds, setSeconds] = useState(cooldown)
   const [paused, setPaused] = useState(false)
-  const [playRequest, setPlayRequest] = useState<number | null>(null)
+  const [playRequest, setPlayRequest] = useState<{ nonce: number; startAt: number } | null>(null)
 
   useEffect(() => {
     sfxShow()
