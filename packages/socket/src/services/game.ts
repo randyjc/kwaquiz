@@ -596,6 +596,13 @@ class Game {
       viewerMode: this.viewerMode,
     })
 
+    if (hasMedia) {
+      // Wait for manager to skip/start answers manually
+      this.manualStartPending = true
+      this.persist()
+      return
+    }
+
     if (effectiveCooldown > 0) {
       await this.startCooldown(effectiveCooldown)
     }
