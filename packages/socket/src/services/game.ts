@@ -48,6 +48,7 @@ class Game {
   }
   breakActive: boolean
   showQuestionPreview: boolean
+  manualStartPending: boolean
 
   constructor(io: Server, socket: Socket, quizz: Quizz) {
     if (!io) {
@@ -88,6 +89,7 @@ class Game {
     }
     this.breakActive = false
     this.showQuestionPreview = true
+    this.manualStartPending = false
 
     const roomInvite = createInviteCode()
     this.inviteCode = roomInvite
@@ -146,6 +148,7 @@ class Game {
       typeof snapshot.showQuestionPreview === "boolean"
         ? snapshot.showQuestionPreview
         : true
+    game.manualStartPending = snapshot.manualStartPending || false
 
     if (game.cooldown.active && game.cooldown.remaining > 0 && !game.cooldown.paused) {
       game.startCooldown(game.cooldown.remaining)
@@ -204,6 +207,7 @@ class Game {
       },
       breakActive: this.breakActive,
       showQuestionPreview: this.showQuestionPreview,
+      manualStartPending: this.manualStartPending,
     }
   }
 
@@ -509,6 +513,13 @@ class Game {
       return
     }
 
+    if (this.manualStartPending) {
+      this.manualStartPending = false
+      const question = this.quizz.questions[this.round.currentQuestion]
+      this.startAnswerPhase(question)
+      return
+    }
+
     this.abortCooldown()
   }
 
@@ -563,10 +574,10 @@ class Game {
       return
     }
 
-    const effectiveCooldown =
+    const isMedia =
       question.media && (question.media.type === "audio" || question.media.type === "video")
-        ? 0
-        : question.cooldown
+
+    const effectiveCooldown = isMedia ? 0 : question.cooldown
 
     this.broadcastStatus(STATUS.SHOW_QUESTION, {
       question: question.question,
@@ -577,6 +588,12 @@ class Game {
       syncMedia: question.syncMedia !== false,
     })
 
+    if (isMedia) {
+      this.manualStartPending = true
+      this.persist()
+      return
+    }
+
     if (effectiveCooldown > 0) {
       await this.startCooldown(effectiveCooldown)
     }
@@ -585,25 +602,7 @@ class Game {
       return
     }
 
-    this.round.startTime = Date.now()
-
-    this.broadcastStatus(STATUS.SELECT_ANSWER, {
-      question: question.question,
-      answers: question.answers,
-      image: question.image,
-      media: question.media,
-      time: question.time,
-      totalPlayer: this.players.length,
-    })
-
-    await this.startCooldown(question.time)
-
-    if (!this.started) {
-      return
-    }
-
-    this.showResults(question)
-    this.persist()
+    await this.startAnswerPhase(question)
   }
 
   showResults(question: any) {
@@ -788,6 +787,29 @@ class Game {
       return
     }
     this.io.to(this.gameId).emit("game:mediaPlay")
+  }
+
+  private async startAnswerPhase(question: any) {
+    this.manualStartPending = false
+    this.round.startTime = Date.now()
+
+    this.broadcastStatus(STATUS.SELECT_ANSWER, {
+      question: question.question,
+      answers: question.answers,
+      image: question.image,
+      media: question.media,
+      time: question.time,
+      totalPlayer: this.players.length,
+    })
+
+    await this.startCooldown(question.time)
+
+    if (!this.started) {
+      return
+    }
+
+    this.showResults(question)
+    this.persist()
   }
 }
 

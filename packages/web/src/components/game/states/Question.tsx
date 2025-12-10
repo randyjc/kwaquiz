@@ -35,7 +35,8 @@ const Question = ({
     setPlayRequest((prev) => prev + 1)
   })
 
-  const percent = Math.max(0, Math.min(100, (seconds / cooldown) * 100))
+  const percent =
+    cooldown > 0 ? Math.max(0, Math.min(100, (seconds / cooldown) * 100)) : 0
 
   return (
     <section className="relative mx-auto flex h-full w-full max-w-7xl flex-1 flex-col items-center px-4">
@@ -56,12 +57,18 @@ const Question = ({
           playRequest={playRequest}
         />
       </div>
-      <div className="mb-20 h-4 w-full max-w-4xl self-start overflow-hidden rounded-full bg-white/30">
-        <div
-          className="h-full bg-primary transition-[width]"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
+      {cooldown > 0 ? (
+        <div className="mb-20 h-4 w/full max-w-4xl self-start overflow-hidden rounded-full bg-white/30">
+          <div
+            className="h-full bg-primary transition-[width]"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      ) : (
+        <div className="mb-20 rounded-full bg-black/50 px-4 py-2 text-sm font-semibold text-white">
+          Waiting for manager to start answers
+        </div>
+      )}
       {paused && (
         <div className="absolute bottom-6 right-6 rounded-md bg-black/60 px-3 py-1 text-sm font-semibold text-white">
           Paused
