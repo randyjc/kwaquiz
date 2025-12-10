@@ -2,16 +2,19 @@
 
 import type { QuestionMedia as QuestionMediaType } from "@rahoot/common/types/game"
 import clsx from "clsx"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type Props = {
   media?: QuestionMediaType
   alt: string
   onPlayChange?: (_playing: boolean) => void
+  playRequest?: number
 }
 
-const QuestionMedia = ({ media, alt, onPlayChange }: Props) => {
+const QuestionMedia = ({ media, alt, onPlayChange, playRequest }: Props) => {
   const [zoomed, setZoomed] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   if (!media) {
     return null
@@ -50,6 +53,7 @@ const QuestionMedia = ({ media, alt, onPlayChange }: Props) => {
       return (
         <div className={clsx(containerClass, "px-4")}>
           <audio
+            ref={audioRef}
             controls
             crossOrigin="anonymous"
             src={media.url}
@@ -66,6 +70,7 @@ const QuestionMedia = ({ media, alt, onPlayChange }: Props) => {
       return (
         <div className={containerClass}>
           <video
+            ref={videoRef}
             controls
             crossOrigin="anonymous"
             playsInline
@@ -83,5 +88,15 @@ const QuestionMedia = ({ media, alt, onPlayChange }: Props) => {
       return null
   }
 }
+
+useEffect(() => {
+  if (!media) return
+  if (media.type === "audio" && audioRef.current && playRequest !== undefined) {
+    audioRef.current.play().catch(() => {})
+  }
+  if (media.type === "video" && videoRef.current && playRequest !== undefined) {
+    videoRef.current.play().catch(() => {})
+  }
+}, [playRequest, media])
 
 export default QuestionMedia
