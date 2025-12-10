@@ -135,7 +135,6 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
       }
     }, delay + 2000)
   }
-  }
 
   useEffect(() => {
     if (!media || !playRequest) return
