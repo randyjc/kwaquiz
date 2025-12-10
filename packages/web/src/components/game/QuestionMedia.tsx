@@ -39,11 +39,10 @@ const QuestionMedia = ({
     if (typeof window === "undefined") return
     const stored = window.sessionStorage.getItem(STORAGE_KEY)
     const alreadyAllowed = stored === "true"
-    if (alreadyAllowed && !isIOS) {
+    if (alreadyAllowed) {
       setAutoplayReady(true)
       setPromptEnable(false)
     } else if (requireUserEnable) {
-      // On iOS we still need a fresh gesture each load
       setPromptEnable(true)
       setAutoplayReady(false)
     }
@@ -102,6 +101,7 @@ const QuestionMedia = ({
           if (el) el.muted = false
         }, 150)
       } catch {
+        // ignore warmup failure
         if (el) el.muted = false
       }
     }
@@ -133,18 +133,13 @@ const QuestionMedia = ({
       if (!el) return
       try {
         await ensureUnlocked()
-        // Aggressive prep for Safari/iOS
         el.muted = true
         el.load?.()
-        el.pause()
         el.currentTime = 0
         await el.play()
-        // unmute after playback starts (keep muted on iOS until gesture unlock proved)
         setTimeout(() => {
           if (!el) return
-          if (!isIOS || autoplayReady) {
-            el.muted = false
-          }
+          if (!isIOS || autoplayReady) el.muted = false
         }, 200)
         lastNonce.current = nonce
         pendingRequest.current = null
@@ -152,17 +147,15 @@ const QuestionMedia = ({
         try {
           el.muted = true
           el.load?.()
-          el.pause()
           el.currentTime = 0
           await el.play()
           setTimeout(() => {
-            if (!isIOS || autoplayReady) {
-              el.muted = false
-            }
+            if (!isIOS || autoplayReady) el.muted = false
           }, 150)
           lastNonce.current = nonce
           pendingRequest.current = null
         } catch {
+          // If autoplay blocked and consent not granted, prompt again
           if (requireUserEnable && !autoplayReady) {
             setPromptEnable(true)
             pendingRequest.current = request
