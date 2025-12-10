@@ -37,10 +37,10 @@ const QuestionMedia = ({
   useEffect(() => {
     if (typeof window === "undefined") return
     const stored = window.sessionStorage.getItem(STORAGE_KEY)
-    if (stored === "true" && globalUnlocked) {
+    if (stored === "true") {
       setAutoplayReady(true)
+      setPromptEnable(false)
     } else if (requireUserEnable) {
-      setAutoplayReady(false)
       setPromptEnable(true)
     }
   }, [requireUserEnable])
@@ -54,7 +54,6 @@ const QuestionMedia = ({
       if (audioCtx.state === "suspended") {
         await audioCtx.resume()
       }
-      // play a silent audio to keep gesture active for this page
       const silent = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")
       silent.muted = true
       await silent.play().catch(() => {})
@@ -147,9 +146,7 @@ const QuestionMedia = ({
           lastNonce.current = nonce
           pendingRequest.current = null
         } catch {
-          // Autoplay blocked. Force prompt and reset readiness so user can re-allow.
-          if (requireUserEnable) {
-            setAutoplayReady(false)
+          if (requireUserEnable && !autoplayReady) {
             setPromptEnable(true)
             pendingRequest.current = request
             lastNonce.current = 0
@@ -170,7 +167,7 @@ const QuestionMedia = ({
       }
     }, delay)
 
-    // fallback: if still stalled shortly after start time, re-show consent
+    // fallback: if still stalled shortly after start time, try another play without repropt
     fallbackTimer.current = setTimeout(() => {
       const el =
         currentMedia.type === "audio"
@@ -179,14 +176,10 @@ const QuestionMedia = ({
             ? videoRef.current
             : null
       if (!el) return
-      const stalled = el.paused || el.currentTime === 0
-      if (stalled && requireUserEnable) {
-        setAutoplayReady(false)
-        setPromptEnable(true)
-        pendingRequest.current = request
-        lastNonce.current = 0
+      if (el.paused || el.currentTime === 0) {
+        void el.play().catch(() => {})
       }
-    }, delay + 2000)
+    }, delay + 1200)
   }
 
   useEffect(() => {
