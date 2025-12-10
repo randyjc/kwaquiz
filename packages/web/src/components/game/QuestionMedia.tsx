@@ -115,8 +115,7 @@ const QuestionMedia = ({
 
   const runPlay = (request: { nonce: number; startAt: number }, currentMedia: QuestionMediaType) => {
     const { nonce, startAt } = request
-    // avoid replay unless we re-prompted
-    if (nonce === lastNonce.current && !promptEnable) return
+    lastNonce.current = nonce
 
     if (playTimer.current) {
       clearTimeout(playTimer.current)
@@ -160,7 +159,8 @@ const QuestionMedia = ({
     }
 
     pendingRequest.current = request
-    const delay = Math.max(0, startAt - Date.now())
+    // If the start time is already in the past, nudge forward a bit
+    const delay = Math.max(0, startAt - Date.now() + 50)
     playTimer.current = setTimeout(() => {
       playTimer.current = null
       if (currentMedia.type === "audio") {
