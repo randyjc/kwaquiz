@@ -17,6 +17,7 @@ const STORAGE_KEY = "kwaquiz-autoplay-enabled"
 const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnable }: Props) => {
   const [zoomed, setZoomed] = useState(false)
   const [autoplayReady, setAutoplayReady] = useState(false)
+  const [promptEnable, setPromptEnable] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastNonce = useRef<number>(0)
@@ -28,11 +29,14 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     const stored = window.sessionStorage.getItem(STORAGE_KEY)
     if (stored === "true") {
       setAutoplayReady(true)
+    } else if (requireUserEnable) {
+      setPromptEnable(true)
     }
-  }, [])
+  }, [requireUserEnable])
 
   const primeAutoplay = async () => {
     setAutoplayReady(true)
+    setPromptEnable(false)
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem(STORAGE_KEY, "true")
     }
@@ -87,6 +91,10 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
             el.muted = false
           }, 150)
         } catch {
+          if (requireUserEnable) {
+            setPromptEnable(true)
+            pendingRequest.current = request
+          }
           // ignore autoplay failures; user can tap play
         }
       }
@@ -107,6 +115,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     if (!media || !playRequest) return
     pendingRequest.current = playRequest
     if (requireUserEnable && !autoplayReady && (media.type === "audio" || media.type === "video")) {
+      setPromptEnable(true)
       return
     }
     runPlay(playRequest, media)
@@ -192,7 +201,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     case "audio":
       return (
         <div className={clsx(containerClass, "relative px-4")}>
-          {!autoplayReady && requireUserEnable && (
+          {promptEnable && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
@@ -226,7 +235,7 @@ const QuestionMedia = ({ media, alt, onPlayChange, playRequest, requireUserEnabl
     case "video":
       return (
         <div className={clsx(containerClass, "relative")}>
-          {!autoplayReady && requireUserEnable && (
+          {promptEnable && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60">
               <div className="flex max-w-lg flex-col items-center gap-3 text-center text-white">
                 <p className="text-lg font-semibold">Enable synced playback</p>
