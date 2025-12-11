@@ -4,7 +4,8 @@ import { useEffect } from "react"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 
 const ThemeHydrator = () => {
-  const { setBackground, setBrandName } = useThemeStore()
+  const { setBackground, setBrandName, brandName } = useThemeStore()
+  const DEFAULT_BRAND = "KwaQuiz"
 
   useEffect(() => {
     const load = async () => {
@@ -17,18 +18,25 @@ const ThemeHydrator = () => {
           setBackground(data.theme.backgroundUrl || null)
         }
 
+        const incomingBrand = data.theme.brandName
+        const hasStoredCustom =
+          typeof brandName === "string" &&
+          brandName.trim().length > 0 &&
+          brandName !== DEFAULT_BRAND
+
         if (
-          typeof data.theme.brandName === "string" &&
-          data.theme.brandName.trim().length > 0
+          typeof incomingBrand === "string" &&
+          incomingBrand.trim().length > 0 &&
+          !hasStoredCustom
         ) {
-          setBrandName(data.theme.brandName)
+          setBrandName(incomingBrand)
         }
       } catch (error) {
         console.error("Failed to hydrate theme", error)
       }
     }
     load()
-  }, [setBackground, setBrandName])
+  }, [setBackground, setBrandName, brandName])
 
   return null
 }
