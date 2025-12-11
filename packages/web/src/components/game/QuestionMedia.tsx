@@ -41,9 +41,14 @@ const QuestionMedia = ({
         clearInterval(timer)
         setCountdown(null)
         const el = media.type === "audio" ? audioRef.current : videoRef.current
-        el?.play().catch(() => {
-          /* ignore autoplay rejection */
-        })
+        if (el) {
+          const playPromise = el.play()
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {
+              /* ignore autoplay rejection */
+            })
+          }
+        }
       } else {
         setCountdown(remaining)
       }
