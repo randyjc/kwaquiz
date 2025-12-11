@@ -176,6 +176,7 @@ const ViewerClient = () => {
                     : undefined)
                 }
                 alt={viewStatus.data.question}
+                autoPlayAfterMs={5000}
               />
             </div>
           ) : viewStatus.name === STATUS.SELECT_ANSWER ? (
@@ -192,6 +193,7 @@ const ViewerClient = () => {
                       : undefined)
                   }
                   alt={viewStatus.data.question}
+                  autoPlayAfterMs={5000}
                 />
               )}
               <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
