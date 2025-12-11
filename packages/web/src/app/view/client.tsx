@@ -20,6 +20,7 @@ const ViewerClient = () => {
   const [joinedGame, setJoinedGame] = useState<string | null>(null)
   const lastAutoRef = useRef<string | undefined>(undefined)
   const [lastResponses, setLastResponses] = useState<any | null>(null)
+  const [autoplayReady, setAutoplayReady] = useState(false)
 
   useEvent("game:status", (incoming) => {
     setStatus(incoming)
@@ -30,6 +31,7 @@ const ViewerClient = () => {
 
   useEvent("viewer:joined", ({ gameId, status }) => {
     setJoinedGame(gameId)
+    setAutoplayReady(false)
     if (status) {
       setStatus(status)
       if (status.name === STATUS.SHOW_RESPONSES) {
@@ -47,6 +49,7 @@ const ViewerClient = () => {
     setJoinedGame(null)
     setStatus(null)
     setLastResponses(null)
+    setAutoplayReady(false)
     lastAutoRef.current = undefined
   })
 
@@ -125,6 +128,7 @@ const ViewerClient = () => {
 
   const shouldAutoPlay =
     viewerModeOn &&
+    autoplayReady &&
     viewStatus?.name === STATUS.SHOW_QUESTION &&
     mediaForStatus &&
     mediaForStatus.type !== "image" &&
@@ -208,12 +212,32 @@ const ViewerClient = () => {
                   {viewStatus.data.question}
                 </h2>
               )}
-              <QuestionMedia
-                key={`${currentQuestionId}-${mediaForStatus?.url ?? ""}`}
-                media={mediaForStatus}
-                alt={viewStatus.data.question}
-                autoPlayCountdownSeconds={shouldAutoPlay ? 3 : undefined}
-              />
+              {viewerModeOn && !autoplayReady && mediaForStatus ? (
+                <div className="flex w-full max-w-xl flex-col items-center gap-3 rounded-lg bg-black/60 p-4 text-center text-white shadow-lg">
+                  <p className="text-lg font-semibold">
+                    Enable synced playback
+                  </p>
+                  <p className="text-sm text-white/80">
+                    Tap once to allow autoplay for this session.
+                  </p>
+                  <button
+                    className="rounded bg-primary px-4 py-2 font-semibold text-white"
+                    onClick={() => {
+                      setAutoplayReady(true)
+                      lastAutoRef.current = undefined
+                    }}
+                  >
+                    Allow autoplay
+                  </button>
+                </div>
+              ) : (
+                <QuestionMedia
+                  key={`${currentQuestionId}-${mediaForStatus?.url ?? ""}`}
+                  media={mediaForStatus}
+                  alt={viewStatus.data.question}
+                  autoPlayCountdownSeconds={shouldAutoPlay ? 3 : undefined}
+                />
+              )}
             </div>
           ) : viewStatus.name === STATUS.SELECT_ANSWER ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-4 rounded-lg bg-white/90 p-6 shadow">
