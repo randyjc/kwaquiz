@@ -196,12 +196,12 @@ const ViewerClient = () => {
             </div>
           ) : viewStatus.name === STATUS.SHOW_QUESTION ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-6 rounded-lg bg-white/90 p-6 shadow">
-              {!viewerModeOn && (
+              {!viewerModeOn || !mediaForStatus || mediaForStatus.type === "image" ? (
                 <h2 className="text-center text-3xl font-bold text-gray-900">
                   {viewStatus.data.question}
                 </h2>
-              )}
-              {viewerModeOn && !autoplayReady && mediaForStatus ? (
+              ) : null}
+              {viewerModeOn && mediaForStatus && mediaForStatus.type !== "image" && !autoplayReady ? (
                 <div className="flex w-full max-w-xl flex-col items-center gap-3 rounded-lg bg-black/60 p-4 text-center text-white shadow-lg">
                   <p className="text-lg font-semibold">
                     Enable synced playback
