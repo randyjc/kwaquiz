@@ -3,11 +3,9 @@ import { persist } from "zustand/middleware"
 
 type ThemeState = {
   backgroundUrl: string | null
-  brandName: string | null
-  hydrated: boolean
+  brandName: string
   setBackground: (_url: string | null) => void
-  setBrandName: (_name: string | null) => void
-  setHydrated: (_hydrated: boolean) => void
+  setBrandName: (_name: string) => void
   reset: () => void
 }
 
@@ -15,18 +13,13 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       backgroundUrl: null,
-      brandName: null,
-      hydrated: false,
+      brandName: "KwaQuiz",
       setBackground: (backgroundUrl) => set({ backgroundUrl }),
       setBrandName: (brandName) => set({ brandName }),
-      setHydrated: (hydrated) => set({ hydrated }),
       reset: () => set({ backgroundUrl: null, brandName: "KwaQuiz" }),
     }),
     {
       name: "theme-preferences",
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated?.(true)
-      },
     },
   ),
 )
