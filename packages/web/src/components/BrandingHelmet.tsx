@@ -8,7 +8,7 @@ const BrandingHelmet = () => {
   const fallback = "KwaQuiz"
 
   useEffect(() => {
-    document.title = brandName || fallback
+    document.title = (brandName && brandName.trim().length > 0 ? brandName : fallback) as string
   }, [brandName])
 
   return null
