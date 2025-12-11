@@ -5,11 +5,10 @@ import { useEffect } from "react"
 
 const BrandingHelmet = () => {
   const { brandName } = useThemeStore()
+  const fallback = "KwaQuiz"
 
   useEffect(() => {
-    if (brandName) {
-      document.title = brandName
-    }
+    document.title = brandName || fallback
   }, [brandName])
 
   return null
