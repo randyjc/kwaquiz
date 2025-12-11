@@ -18,6 +18,7 @@ const ViewerClient = () => {
   const [inviteCode, setInviteCode] = useState("")
   const [status, setStatus] = useState<StatusPayload>(null)
   const [joinedGame, setJoinedGame] = useState<string | null>(null)
+  const [autoplayUsed, setAutoplayUsed] = useState(false)
   const [lastResponses, setLastResponses] = useState<any | null>(null)
 
   useEvent("game:status", (incoming) => {
@@ -85,6 +86,24 @@ const ViewerClient = () => {
   }
 
   const resolvedBackground = backgroundUrl || background.src
+
+  // Determine if we should auto-play media (only first time media appears on SHOW_QUESTION)
+  const mediaForStatus =
+    viewStatus?.name === STATUS.SHOW_QUESTION || viewStatus?.name === STATUS.SELECT_ANSWER
+      ? viewStatus.data.media ||
+        (viewStatus.data.image ? { type: "image", url: viewStatus.data.image } : undefined)
+      : undefined
+  const shouldAutoPlay =
+    viewStatus?.name === STATUS.SHOW_QUESTION &&
+    mediaForStatus &&
+    mediaForStatus.type !== "image" &&
+    !autoplayUsed
+
+  useEffect(() => {
+    if (shouldAutoPlay) {
+      setAutoplayUsed(true)
+    }
+  }, [shouldAutoPlay])
 
   // Prefer live status; if we drop back to WAIT after responses, keep showing the last results
   let viewStatus: StatusPayload = status
@@ -169,14 +188,9 @@ const ViewerClient = () => {
                 {viewStatus.data.question}
               </h2>
               <QuestionMedia
-                media={
-                  viewStatus.data.media ||
-                  (viewStatus.data.image
-                    ? { type: "image", url: viewStatus.data.image }
-                    : undefined)
-                }
+                media={mediaForStatus}
                 alt={viewStatus.data.question}
-                autoPlayCountdownSeconds={3}
+                autoPlayCountdownSeconds={shouldAutoPlay ? 3 : undefined}
               />
             </div>
           ) : viewStatus.name === STATUS.SELECT_ANSWER ? (
@@ -193,7 +207,7 @@ const ViewerClient = () => {
                       : undefined)
                   }
                   alt={viewStatus.data.question}
-                  autoPlayCountdownSeconds={3}
+                  autoPlayCountdownSeconds={undefined}
                 />
               )}
               <div className="grid w-full max-w-4xl grid-cols-2 gap-3">
