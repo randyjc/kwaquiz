@@ -20,7 +20,7 @@ export const useThemeStore = create<ThemeState>()(
       setBackground: (backgroundUrl) => set({ backgroundUrl }),
       setBrandName: (brandName) => set({ brandName }),
       setHydrated: (hydrated) => set({ hydrated }),
-      reset: () => set({ backgroundUrl: null, brandName: null }),
+      reset: () => set({ backgroundUrl: null, brandName: "KwaQuiz" }),
     }),
     {
       name: "theme-preferences",

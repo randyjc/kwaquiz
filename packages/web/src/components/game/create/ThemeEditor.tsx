@@ -163,7 +163,7 @@ const ThemeEditor = ({ onBack }: Props) => {
               Brand name
             </span>
             <input
-              value={brandName}
+              value={brandName ?? ""}
               onChange={(e) => {
                 setBrandName(e.target.value)
                 persistTheme({ brandName: e.target.value })
