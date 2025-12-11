@@ -1,17 +1,21 @@
 "use client"
 
 import { useThemeStore } from "@rahoot/web/stores/theme"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 const BrandingHelmet = () => {
   const { brandName } = useThemeStore()
-  const fallback = "KwaQuiz"
+  const initialTitle = useRef<string | null>(null)
 
   useEffect(() => {
-    document.title =
+    if (initialTitle.current === null) {
+      initialTitle.current = document.title
+    }
+    const next =
       typeof brandName === "string" && brandName.trim().length > 0
         ? brandName
-        : fallback
+        : initialTitle.current || document.title
+    document.title = next
   }, [brandName])
 
   return null

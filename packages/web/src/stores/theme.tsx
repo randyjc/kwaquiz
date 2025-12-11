@@ -13,10 +13,10 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       backgroundUrl: null,
-      brandName: "KwaQuiz",
+      brandName: "",
       setBackground: (backgroundUrl) => set({ backgroundUrl }),
       setBrandName: (brandName) => set({ brandName }),
-      reset: () => set({ backgroundUrl: null, brandName: "KwaQuiz" }),
+      reset: () => set({ backgroundUrl: null, brandName: "" }),
     }),
     {
       name: "theme-preferences",

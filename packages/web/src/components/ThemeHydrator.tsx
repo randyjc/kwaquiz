@@ -19,10 +19,11 @@ const ThemeHydrator = () => {
         }
 
         const incomingBrand: string | undefined = data.theme.brandName
-        if (typeof incomingBrand === "string" && incomingBrand.trim().length > 0) {
+        if (typeof incomingBrand === "string") {
           setBrandName(incomingBrand.trim())
         } else {
-          setBrandName(DEFAULT_BRAND)
+          // no fallback; leave brand empty if server has none
+          setBrandName("")
         }
       } catch (error) {
         console.error("Failed to hydrate theme", error)
