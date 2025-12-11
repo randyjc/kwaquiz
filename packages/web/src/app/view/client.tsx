@@ -112,12 +112,14 @@ const ViewerClient = () => {
       (viewStatus.data.image ? { type: "image", url: viewStatus.data.image } : undefined)
   }
 
-  const currentQuestionId =
+  let currentQuestionId =
     viewStatus?.data?.id ??
     viewStatus?.data?.question ??
     (viewStatus?.data?.questionNumber
       ? `q-${viewStatus.data.questionNumber}`
-      : undefined)
+      : undefined) ??
+    mediaForStatus?.url ??
+    "unknown"
 
   const viewerModeOn = !!viewStatus?.data?.viewerMode
 
@@ -207,7 +209,7 @@ const ViewerClient = () => {
                 </h2>
               )}
               <QuestionMedia
-                key={`${viewStatus.data.question || ""}-${viewStatus.data.questionNumber ?? ""}`}
+                key={`${currentQuestionId}-${mediaForStatus?.url ?? ""}`}
                 media={mediaForStatus}
                 alt={viewStatus.data.question}
                 autoPlayCountdownSeconds={shouldAutoPlay ? 3 : undefined}
