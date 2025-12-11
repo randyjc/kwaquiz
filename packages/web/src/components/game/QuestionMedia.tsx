@@ -22,36 +22,35 @@ const QuestionMedia = ({
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
 
-  // Reset countdown when media or countdown seconds change
+  // Manage countdown and autoplay
   useEffect(() => {
     if (
-      media &&
-      (media.type === "audio" || media.type === "video") &&
-      typeof autoPlayCountdownSeconds === "number"
+      !media ||
+      (media.type !== "audio" && media.type !== "video") ||
+      typeof autoPlayCountdownSeconds !== "number"
     ) {
-      setCountdown(autoPlayCountdownSeconds)
-    } else {
       setCountdown(null)
-    }
-  }, [media, autoPlayCountdownSeconds])
-
-  // Tick down the countdown and trigger play when it reaches zero
-  useEffect(() => {
-    if (!media || (media.type !== "audio" && media.type !== "video")) return
-    if (countdown === null) return
-
-    if (countdown <= 0) {
-      setCountdown(null)
-      const el = media.type === "audio" ? audioRef.current : videoRef.current
-      el?.play().catch(() => {
-        /* ignore autoplay rejection */
-      })
       return
     }
 
-    const timer = setTimeout(() => setCountdown((prev) => (prev ?? 1) - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [media, countdown])
+    setCountdown(autoPlayCountdownSeconds)
+    let remaining = autoPlayCountdownSeconds
+    const timer = setInterval(() => {
+      remaining -= 1
+      if (remaining <= 0) {
+        clearInterval(timer)
+        setCountdown(null)
+        const el = media.type === "audio" ? audioRef.current : videoRef.current
+        el?.play().catch(() => {
+          /* ignore autoplay rejection */
+        })
+      } else {
+        setCountdown(remaining)
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [media, autoPlayCountdownSeconds])
 
   if (!media) return null
 
