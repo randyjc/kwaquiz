@@ -140,9 +140,6 @@ const ViewerClient = () => {
           <div className="flex items-center justify-end">
             <button
               onClick={() => {
-                if (joinedGame) {
-                  socket?.emit("viewer:leave", { gameId: joinedGame })
-                }
                 setJoinedGame(null)
                 setStatus(null)
               }}
