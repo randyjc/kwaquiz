@@ -24,6 +24,10 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: "theme-preferences",
+      onRehydrateStorage: () => (state) => {
+        // Mark store as hydrated after persistence loads
+        state?.setHydrated(true)
+      },
     },
   ),
 )
