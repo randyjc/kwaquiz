@@ -108,45 +108,63 @@ const ViewerClient = () => {
       }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
-        <div className="rounded-md bg-white/90 p-4 shadow">
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <input
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              placeholder="Game PIN"
-              className="w-full max-w-xs rounded border px-3 py-2"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Manager password"
-              className="w-full max-w-xs rounded border px-3 py-2"
-            />
-            <button
-              onClick={handleJoin}
-              className="rounded bg-primary px-4 py-2 font-semibold text-white shadow"
-              disabled={!isConnected}
-            >
-              View
-            </button>
-            {joinedGame && (
-              <span className="text-sm font-semibold text-gray-700">
-                Viewing game {joinedGame}
-              </span>
-            )}
+        {!joinedGame ? (
+          <div className="rounded-md bg-white/90 p-4 shadow">
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <input
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                placeholder="Game PIN"
+                className="w-full max-w-xs rounded border px-3 py-2"
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Manager password"
+                className="w-full max-w-xs rounded border px-3 py-2"
+              />
+              <button
+                onClick={handleJoin}
+                className="rounded bg-primary px-4 py-2 font-semibold text-white shadow"
+                disabled={!isConnected}
+              >
+                View
+              </button>
+            </div>
+            <p className="text-xs text-gray-600">
+              Use the manager password to authorize the big-screen viewer. Media appears here in viewer mode.
+            </p>
           </div>
-          <p className="text-xs text-gray-600">
-            Use the manager password to authorize the big-screen viewer. Media appears here in viewer mode.
-          </p>
-        </div>
+        ) : (
+          <div className="flex items-center justify-end">
+            <button
+              onClick={() => {
+                if (joinedGame) {
+                  socket?.emit("viewer:leave", { gameId: joinedGame })
+                }
+                setJoinedGame(null)
+                setStatus(null)
+              }}
+              className="rounded bg-white/80 px-4 py-2 text-sm font-semibold text-gray-800 shadow hover:bg-white"
+            >
+              Exit viewer
+            </button>
+          </div>
+        )}
 
         <div className="flex w-full justify-center">
           {!viewStatus ? (
             <div className="rounded-md bg-white/90 p-6 text-center shadow">
-              <p className="text-lg font-semibold text-gray-800">
-                Enter PIN and manager password to start viewing.
-              </p>
+              {joinedGame ? (
+                <p className="text-lg font-semibold text-gray-800">
+                  Waiting for updates…
+                </p>
+              ) : (
+                <p className="text-lg font-semibold text-gray-800">
+                  Enter PIN and manager password to start viewing.
+                </p>
+              )}
             </div>
           ) : viewStatus.name === STATUS.SHOW_QUESTION ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-6 rounded-lg bg-white/90 p-6 shadow">
