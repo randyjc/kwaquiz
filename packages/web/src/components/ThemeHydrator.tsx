@@ -5,7 +5,6 @@ import { useThemeStore } from "@rahoot/web/stores/theme"
 
 const ThemeHydrator = () => {
   const { setBackground, setBrandName } = useThemeStore()
-  const DEFAULT_BRAND = "KwaQuiz"
 
   useEffect(() => {
     const load = async () => {
@@ -21,9 +20,6 @@ const ThemeHydrator = () => {
         const incomingBrand: string | undefined = data.theme.brandName
         if (typeof incomingBrand === "string") {
           setBrandName(incomingBrand.trim())
-        } else {
-          // no fallback; leave brand empty if server has none
-          setBrandName("")
         }
       } catch (error) {
         console.error("Failed to hydrate theme", error)

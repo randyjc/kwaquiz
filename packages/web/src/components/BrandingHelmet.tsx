@@ -12,8 +12,8 @@ const BrandingHelmet = () => {
       initialTitle.current = document.title
     }
     const next =
-      typeof brandName === "string" && brandName.trim().length > 0
-        ? brandName
+      typeof brandName === "string"
+        ? brandName || initialTitle.current || document.title
         : initialTitle.current || document.title
     document.title = next
   }, [brandName])

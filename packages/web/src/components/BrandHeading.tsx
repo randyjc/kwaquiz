@@ -10,7 +10,7 @@ type Props = {
 
 const BrandHeading = ({ className, size = "lg" }: Props) => {
   const { brandName } = useThemeStore()
-  const label = brandName || "KwaQuiz"
+  const label = brandName || "Quiz"
 
   const sizeClass =
     size === "lg"
