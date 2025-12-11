@@ -37,6 +37,7 @@ const ViewerClient = () => {
       }
     }
     toast.success("Viewer connected")
+    setAutoplayUsed(false)
   })
 
   useEvent("game:errorMessage", (msg) => toast.error(msg))
@@ -46,6 +47,7 @@ const ViewerClient = () => {
     setJoinedGame(null)
     setStatus(null)
     setLastResponses(null)
+    setAutoplayUsed(false)
   })
 
   useEffect(() => {
@@ -193,6 +195,7 @@ const ViewerClient = () => {
                 {viewStatus.data.question}
               </h2>
               <QuestionMedia
+                key={`${viewStatus.data.question || ""}-${viewStatus.data.questionNumber ?? ""}`}
                 media={mediaForStatus}
                 alt={viewStatus.data.question}
                 autoPlayCountdownSeconds={shouldAutoPlay ? 3 : undefined}
