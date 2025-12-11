@@ -18,7 +18,6 @@ const ViewerClient = () => {
   const [inviteCode, setInviteCode] = useState("")
   const [status, setStatus] = useState<StatusPayload>(null)
   const [joinedGame, setJoinedGame] = useState<string | null>(null)
-  const lastAutoRef = useRef<string | undefined>(undefined)
   const [lastResponses, setLastResponses] = useState<any | null>(null)
   const [autoplayReady, setAutoplayReady] = useState(false)
 
@@ -39,7 +38,6 @@ const ViewerClient = () => {
       }
     }
     toast.success("Viewer connected")
-    lastAutoRef.current = undefined
   })
 
   useEvent("game:errorMessage", (msg) => toast.error(msg))
@@ -50,7 +48,6 @@ const ViewerClient = () => {
     setStatus(null)
     setLastResponses(null)
     setAutoplayReady(false)
-    lastAutoRef.current = undefined
   })
 
   useEffect(() => {
@@ -121,8 +118,7 @@ const ViewerClient = () => {
     (viewStatus?.data?.questionNumber
       ? `q-${viewStatus.data.questionNumber}`
       : undefined) ??
-    mediaForStatus?.url ??
-    "unknown"
+    mediaForStatus?.url ?? ""
 
   const viewerModeOn = !!viewStatus?.data?.viewerMode
 
@@ -131,14 +127,7 @@ const ViewerClient = () => {
     autoplayReady &&
     viewStatus?.name === STATUS.SHOW_QUESTION &&
     mediaForStatus &&
-    mediaForStatus.type !== "image" &&
-    lastAutoRef.current !== currentQuestionId
-
-  useEffect(() => {
-    if (shouldAutoPlay) {
-      lastAutoRef.current = currentQuestionId
-    }
-  }, [shouldAutoPlay, currentQuestionId])
+    mediaForStatus.type !== "image"
 
   return (
     <div

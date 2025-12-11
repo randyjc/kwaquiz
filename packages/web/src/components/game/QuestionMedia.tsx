@@ -25,36 +25,34 @@ const QuestionMedia = ({
   // Manage countdown and autoplay
   useEffect(() => {
     if (
-      !media ||
-      (media.type !== "audio" && media.type !== "video") ||
-      typeof autoPlayCountdownSeconds !== "number"
+      media &&
+      (media.type === "audio" || media.type === "video") &&
+      typeof autoPlayCountdownSeconds === "number"
     ) {
-      setCountdown(null)
-      return
-    }
-
-    setCountdown(autoPlayCountdownSeconds)
-    let remaining = autoPlayCountdownSeconds
-    const timer = setInterval(() => {
-      remaining -= 1
-      if (remaining <= 0) {
-        clearInterval(timer)
-        setCountdown(null)
-        const el = media.type === "audio" ? audioRef.current : videoRef.current
-        if (el) {
-          const playPromise = el.play()
-          if (playPromise && typeof playPromise.catch === "function") {
-            playPromise.catch(() => {
-              /* ignore autoplay rejection */
-            })
+      setCountdown(autoPlayCountdownSeconds)
+      let remaining = autoPlayCountdownSeconds
+      const timer = setInterval(() => {
+        remaining -= 1
+        if (remaining <= 0) {
+          clearInterval(timer)
+          setCountdown(null)
+          const el = media.type === "audio" ? audioRef.current : videoRef.current
+          if (el) {
+            const playPromise = el.play()
+            if (playPromise && typeof playPromise.catch === "function") {
+              playPromise.catch(() => {
+                /* ignore autoplay rejection */
+              })
+            }
           }
+        } else {
+          setCountdown(remaining)
         }
-      } else {
-        setCountdown(remaining)
-      }
-    }, 1000)
-
-    return () => clearInterval(timer)
+      }, 1000)
+      return () => clearInterval(timer)
+    } else {
+      setCountdown(null)
+    }
   }, [media, autoPlayCountdownSeconds])
 
   if (!media) return null
