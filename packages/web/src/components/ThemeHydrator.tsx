@@ -4,16 +4,10 @@ import { useEffect } from "react"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 
 const ThemeHydrator = () => {
-  const { setBackground, setBrandName, setHydrated, brandName, hydrated } =
-    useThemeStore()
+  const { setBackground, setBrandName, brandName } = useThemeStore()
   const DEFAULT_BRAND = "KwaQuiz"
 
   useEffect(() => {
-    setHydrated(true)
-  }, [setHydrated])
-
-  useEffect(() => {
-    if (!hydrated) return
     const load = async () => {
       try {
         const res = await fetch("/api/theme", { cache: "no-store" })
@@ -24,16 +18,25 @@ const ThemeHydrator = () => {
           setBackground(data.theme.backgroundUrl || null)
         }
 
-        const incomingBrand = data.theme.brandName
-        if (typeof incomingBrand === "string" && incomingBrand.trim().length > 0) {
-          setBrandName(incomingBrand)
+        const incomingBrand: string | undefined = data.theme.brandName
+        const hasCustom =
+          typeof brandName === "string" &&
+          brandName.trim().length > 0 &&
+          brandName !== DEFAULT_BRAND
+
+        if (
+          typeof incomingBrand === "string" &&
+          incomingBrand.trim().length > 0 &&
+          (!hasCustom || incomingBrand !== brandName)
+        ) {
+          setBrandName(incomingBrand.trim())
         }
       } catch (error) {
         console.error("Failed to hydrate theme", error)
       }
     }
     load()
-  }, [setBackground, setBrandName, brandName, hydrated])
+  }, [setBackground, setBrandName, brandName])
 
   return null
 }
