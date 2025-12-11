@@ -87,6 +87,18 @@ const ViewerClient = () => {
 
   const resolvedBackground = backgroundUrl || background.src
 
+  // Prefer live status; if we drop back to WAIT after responses, keep showing the last results
+  let viewStatus: StatusPayload = status
+  if (!viewStatus && lastResponses) {
+    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
+  } else if (
+    viewStatus?.name === STATUS.WAIT &&
+    lastResponses &&
+    viewStatus.data?.text
+  ) {
+    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
+  }
+
   // Determine if we should auto-play media (only first time media appears on SHOW_QUESTION)
   let mediaForStatus: any = undefined
   if (
@@ -109,18 +121,6 @@ const ViewerClient = () => {
       setAutoplayUsed(true)
     }
   }, [shouldAutoPlay])
-
-  // Prefer live status; if we drop back to WAIT after responses, keep showing the last results
-  let viewStatus: StatusPayload = status
-  if (!viewStatus && lastResponses) {
-    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
-  } else if (
-    viewStatus?.name === STATUS.WAIT &&
-    lastResponses &&
-    viewStatus.data?.text
-  ) {
-    viewStatus = { name: STATUS.SHOW_RESPONSES, data: lastResponses }
-  }
 
   return (
     <div
