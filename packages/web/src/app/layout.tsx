@@ -16,7 +16,7 @@ const montserrat = Montserrat({
 export async function generateMetadata(): Promise<Metadata> {
   const theme = getTheme()
   return {
-    title: theme.brandName || "Rahoot",
+    title: theme.brandName || "KwaQuiz",
     icons: "/icon.svg",
   }
 }

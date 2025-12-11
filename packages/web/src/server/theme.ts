@@ -8,7 +8,7 @@ export type ThemeSettings = {
 export const getTheme = (): ThemeSettings => {
   const theme = Config.theme()
   return {
-    brandName: theme.brandName || "Rahoot",
+    brandName: theme.brandName || "KwaQuiz",
     backgroundUrl:
       typeof theme.backgroundUrl === "string" && theme.backgroundUrl.length > 0
         ? theme.backgroundUrl

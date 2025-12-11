@@ -45,7 +45,7 @@ class Config {
         getPath("theme.json"),
         JSON.stringify(
           {
-            brandName: "Rahoot",
+            brandName: "KwaQuiz",
             backgroundUrl: null,
           },
           null,
@@ -178,7 +178,7 @@ class Config {
       return JSON.parse(raw)
     } catch (error) {
       console.error("Failed to read theme config:", error)
-      return { brandName: "Rahoot", backgroundUrl: null }
+      return { brandName: "KwaQuiz", backgroundUrl: null }
     }
   }
 
@@ -266,7 +266,7 @@ class Config {
   static saveTheme(theme: { brandName?: string; backgroundUrl?: string | null }) {
     this.ensureBaseFolders()
     const next = {
-      brandName: theme.brandName || "Rahoot",
+      brandName: theme.brandName || "KwaQuiz",
       backgroundUrl: theme.backgroundUrl ?? null,
     }
 

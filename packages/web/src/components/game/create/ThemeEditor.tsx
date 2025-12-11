@@ -136,7 +136,8 @@ const ThemeEditor = ({ onBack }: Props) => {
   const handleReset = () => {
     reset()
     setCustomUrl("")
-    persistTheme({ backgroundUrl: null, brandName: "Rahoot" })
+    setBrandName("KwaQuiz")
+    persistTheme({ backgroundUrl: null, brandName: "KwaQuiz" })
   }
 
   return (
