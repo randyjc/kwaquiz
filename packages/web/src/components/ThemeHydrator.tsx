@@ -4,8 +4,13 @@ import { useEffect } from "react"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 
 const ThemeHydrator = () => {
-  const { setBackground, setBrandName, brandName, hydrated } = useThemeStore()
+  const { setBackground, setBrandName, setHydrated, brandName, hydrated } =
+    useThemeStore()
   const DEFAULT_BRAND = "KwaQuiz"
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [setHydrated])
 
   useEffect(() => {
     if (!hydrated) return
