@@ -25,16 +25,7 @@ const ThemeHydrator = () => {
         }
 
         const incomingBrand = data.theme.brandName
-        const hasStoredCustom =
-          typeof brandName === "string" &&
-          brandName.trim().length > 0 &&
-          brandName !== DEFAULT_BRAND
-
-        if (
-          typeof incomingBrand === "string" &&
-          incomingBrand.trim().length > 0 &&
-          !hasStoredCustom
-        ) {
+        if (typeof incomingBrand === "string" && incomingBrand.trim().length > 0) {
           setBrandName(incomingBrand)
         }
       } catch (error) {
