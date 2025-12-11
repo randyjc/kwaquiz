@@ -36,8 +36,9 @@ const Question = ({
     cooldown > 0 ? Math.max(0, Math.min(100, (seconds / cooldown) * 100)) : 0
 
   const hideMedia = viewerMode && !forceShowMedia
-  // Always hide the question during the intro/cooldown; it will be shown on the answer screen.
-  const showQuestionText = false
+  // Hide question text only for media questions in viewer mode; show text for non-media.
+  const isMediaQuestion = !!media && !image
+  const showQuestionText = !viewerMode || !isMediaQuestion
 
   return (
     <section className="relative mx-auto flex h-full w-full max-w-7xl flex-1 flex-col items-center px-4">
