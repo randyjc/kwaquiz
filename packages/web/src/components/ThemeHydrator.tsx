@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useThemeStore } from "@rahoot/web/stores/theme"
 
 const ThemeHydrator = () => {
-  const { setBackground, setBrandName } = useThemeStore()
+  const { setBackground, setBrandName, brandName } = useThemeStore()
   const DEFAULT_BRAND = "KwaQuiz"
 
   useEffect(() => {
@@ -18,6 +18,10 @@ const ThemeHydrator = () => {
           setBackground(data.theme.backgroundUrl || null)
         }
 
+        const hasLocal =
+          typeof brandName === "string" && brandName.trim().length > 0
+        if (hasLocal) return
+
         const incomingBrand: string | undefined = data.theme.brandName
         if (typeof incomingBrand === "string" && incomingBrand.trim().length > 0) {
           setBrandName(incomingBrand.trim())
@@ -29,7 +33,7 @@ const ThemeHydrator = () => {
       }
     }
     load()
-  }, [setBackground, setBrandName])
+  }, [setBackground, setBrandName, brandName])
 
   return null
 }
