@@ -213,7 +213,6 @@ const ViewerClient = () => {
                     className="rounded bg-primary px-4 py-2 font-semibold text-white"
                     onClick={() => {
                       setAutoplayReady(true)
-                      lastAutoRef.current = undefined
                     }}
                   >
                     Allow autoplay
