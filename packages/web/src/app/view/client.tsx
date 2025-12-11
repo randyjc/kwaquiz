@@ -88,11 +88,16 @@ const ViewerClient = () => {
   const resolvedBackground = backgroundUrl || background.src
 
   // Determine if we should auto-play media (only first time media appears on SHOW_QUESTION)
-  const mediaForStatus =
-    viewStatus?.name === STATUS.SHOW_QUESTION || viewStatus?.name === STATUS.SELECT_ANSWER
-      ? viewStatus.data.media ||
-        (viewStatus.data.image ? { type: "image", url: viewStatus.data.image } : undefined)
-      : undefined
+  let mediaForStatus: any = undefined
+  if (
+    viewStatus?.name === STATUS.SHOW_QUESTION ||
+    viewStatus?.name === STATUS.SELECT_ANSWER
+  ) {
+    mediaForStatus =
+      viewStatus.data.media ||
+      (viewStatus.data.image ? { type: "image", url: viewStatus.data.image } : undefined)
+  }
+
   const shouldAutoPlay =
     viewStatus?.name === STATUS.SHOW_QUESTION &&
     mediaForStatus &&
