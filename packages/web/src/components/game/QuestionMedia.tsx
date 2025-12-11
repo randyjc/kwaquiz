@@ -8,31 +8,43 @@ type Props = {
   media?: QuestionMediaType
   alt: string
   onPlayChange?: (_playing: boolean) => void
-  autoPlayAfterMs?: number
+  autoPlayCountdownSeconds?: number
 }
 
-const QuestionMedia = ({ media, alt, onPlayChange, autoPlayAfterMs }: Props) => {
+const QuestionMedia = ({
+  media,
+  alt,
+  onPlayChange,
+  autoPlayCountdownSeconds,
+}: Props) => {
   const [zoomed, setZoomed] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [starting, setStarting] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
 
   useEffect(() => {
     if (!media) return
     if (media.type !== "audio" && media.type !== "video") return
-    if (autoPlayAfterMs === undefined) return
+    if (autoPlayCountdownSeconds === undefined) return
 
-    const timer = setTimeout(() => {
-      setStarting(true)
-      const el = media.type === "audio" ? audioRef.current : videoRef.current
-      el?.play().catch(() => {
-        /* ignore autoplay rejection */
-        setStarting(false)
-      })
-    }, autoPlayAfterMs)
+    setCountdown(autoPlayCountdownSeconds)
+    let remaining = autoPlayCountdownSeconds
+    const timer = setInterval(() => {
+      remaining -= 1
+      if (remaining <= 0) {
+        clearInterval(timer)
+        setCountdown(null)
+        const el = media.type === "audio" ? audioRef.current : videoRef.current
+        el?.play().catch(() => {
+          /* ignore autoplay rejection */
+        })
+      } else {
+        setCountdown(remaining)
+      }
+    }, 1000)
 
-    return () => clearTimeout(timer)
-  }, [media, autoPlayAfterMs])
+    return () => clearInterval(timer)
+  }, [media, autoPlayCountdownSeconds])
 
   if (!media) return null
 
@@ -67,10 +79,17 @@ const QuestionMedia = ({ media, alt, onPlayChange, autoPlayAfterMs }: Props) => 
 
     case "audio":
       return (
-        <div className={clsx(containerClass, "px-4 flex flex-col items-center")}>
-          {starting && (
-            <div className="mb-2 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold text-white shadow">
-              Starting playback…
+        <div
+          className={clsx(
+            containerClass,
+            "relative flex flex-col items-center px-4",
+          )}
+        >
+          {countdown !== null && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <div className="rounded-full bg-black/70 px-6 py-3 text-3xl font-extrabold text-white shadow-lg">
+                {countdown}
+              </div>
             </div>
           )}
           <audio
@@ -81,7 +100,6 @@ const QuestionMedia = ({ media, alt, onPlayChange, autoPlayAfterMs }: Props) => 
             className="mt-2 w-full rounded-md bg-black/40 p-2 shadow-lg"
             preload="auto"
             onPlay={() => {
-              setStarting(false)
               onPlayChange?.(true)
             }}
             onPause={() => onPlayChange?.(false)}
@@ -92,10 +110,12 @@ const QuestionMedia = ({ media, alt, onPlayChange, autoPlayAfterMs }: Props) => 
 
     case "video":
       return (
-        <div className={clsx(containerClass, "flex flex-col items-center")}>
-          {starting && (
-            <div className="mb-2 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold text-white shadow">
-              Starting playback…
+        <div className={clsx(containerClass, "relative flex flex-col items-center")}>
+          {countdown !== null && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <div className="rounded-full bg-black/70 px-6 py-3 text-3xl font-extrabold text-white shadow-lg">
+                {countdown}
+              </div>
             </div>
           )}
           <video
@@ -107,7 +127,6 @@ const QuestionMedia = ({ media, alt, onPlayChange, autoPlayAfterMs }: Props) => 
             className="m-4 w-full max-w-5xl rounded-md shadow-lg"
             preload="auto"
             onPlay={() => {
-              setStarting(false)
               onPlayChange?.(true)
             }}
             onPause={() => onPlayChange?.(false)}
