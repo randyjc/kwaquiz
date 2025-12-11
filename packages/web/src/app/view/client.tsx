@@ -198,15 +198,9 @@ const ViewerClient = () => {
             </div>
           ) : viewStatus.name === STATUS.SHOW_QUESTION ? (
             <div className="flex w-full max-w-6xl flex-col items-center gap-6 rounded-lg bg-white/90 p-6 shadow">
-              {viewStatus.data.viewerMode ? (
-                <div className="rounded-full bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-600">
-                  Question hidden in viewer mode
-                </div>
-              ) : (
-                <h2 className="text-center text-3xl font-bold text-gray-900">
-                  {viewStatus.data.question}
-                </h2>
-              )}
+              <h2 className="text-center text-3xl font-bold text-gray-900">
+                {viewStatus.data.question}
+              </h2>
               <QuestionMedia
                 key={`${viewStatus.data.question || ""}-${viewStatus.data.questionNumber ?? ""}`}
                 media={mediaForStatus}
