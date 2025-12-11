@@ -16,7 +16,7 @@ export const useThemeStore = create<ThemeState>()(
     (set) => ({
       backgroundUrl: null,
       brandName: "KwaQuiz",
-      hydrated: true,
+      hydrated: false,
       setBackground: (backgroundUrl) => set({ backgroundUrl }),
       setBrandName: (brandName) => set({ brandName }),
       setHydrated: (hydrated) => set({ hydrated }),
@@ -24,7 +24,9 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: "theme-preferences",
-      // Hydrated defaults to true to avoid overwriting with defaults on load.
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated?.(true)
+      },
     },
   ),
 )
