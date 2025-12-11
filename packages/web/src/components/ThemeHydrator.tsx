@@ -20,16 +20,17 @@ const ThemeHydrator = () => {
         }
 
         const incomingBrand: string | undefined = data.theme.brandName
-        if (
-          typeof incomingBrand === "string" &&
-          incomingBrand.trim().length > 0 &&
-          incomingBrand !== brandName
-        ) {
-          setBrandName(incomingBrand.trim())
-        } else if (
-          (!incomingBrand || incomingBrand.trim().length === 0) &&
-          brandName?.trim().length === 0
-        ) {
+        const hasLocal =
+          typeof brandName === "string" && brandName.trim().length > 0
+
+        if (typeof incomingBrand === "string" && incomingBrand.trim().length > 0) {
+          const trimmed = incomingBrand.trim()
+          // Prefer the locally persisted brand if it exists; only apply server brand
+          // when we don't have one locally or when the server brand is non-default.
+          if (!hasLocal || (trimmed !== DEFAULT_BRAND && trimmed !== brandName)) {
+            setBrandName(trimmed)
+          }
+        } else if (!hasLocal) {
           setBrandName(DEFAULT_BRAND)
         }
       } catch (error) {
