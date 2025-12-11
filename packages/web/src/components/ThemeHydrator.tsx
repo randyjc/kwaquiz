@@ -11,13 +11,17 @@ const ThemeHydrator = () => {
       try {
         const res = await fetch("/api/theme", { cache: "no-store" })
         const data = await res.json()
-        if (res.ok && data.theme) {
-          if (typeof data.theme.backgroundUrl === "string") {
-            setBackground(data.theme.backgroundUrl || null)
-          }
-          if (typeof data.theme.brandName === "string") {
-            setBrandName(data.theme.brandName)
-          }
+        if (!res.ok || !data.theme) return
+
+        if (typeof data.theme.backgroundUrl === "string") {
+          setBackground(data.theme.backgroundUrl || null)
+        }
+
+        if (
+          typeof data.theme.brandName === "string" &&
+          data.theme.brandName.trim().length > 0
+        ) {
+          setBrandName(data.theme.brandName)
         }
       } catch (error) {
         console.error("Failed to hydrate theme", error)
