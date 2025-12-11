@@ -36,11 +36,13 @@ const Question = ({
     cooldown > 0 ? Math.max(0, Math.min(100, (seconds / cooldown) * 100)) : 0
 
   const hideMedia = viewerMode && !forceShowMedia
+  // Always hide the question during the intro/cooldown; it will be shown on the answer screen.
+  const showQuestionText = false
 
   return (
     <section className="relative mx-auto flex h-full w-full max-w-7xl flex-1 flex-col items-center px-4">
       <div className="flex flex-1 flex-col items-center justify-center gap-5">
-        {showQuestion ? (
+        {showQuestionText ? (
           <h2 className="anim-show text-center text-3xl font-bold text-white drop-shadow-lg md:text-4xl lg:text-5xl">
             {question}
           </h2>
