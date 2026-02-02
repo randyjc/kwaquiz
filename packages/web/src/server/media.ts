@@ -9,6 +9,54 @@ const toBytes = (valueMb: number) => valueMb * 1024 * 1024
 const envMaxMb = Number(process.env.MEDIA_MAX_UPLOAD_MB || process.env.MAX_UPLOAD_MB || 50)
 const MAX_UPLOAD_SIZE = Number.isFinite(envMaxMb) && envMaxMb > 0 ? toBytes(envMaxMb) : toBytes(50)
 
+const ALLOWED_EXTENSIONS = new Set([
+  ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg",
+  ".mp3", ".m4a", ".aac", ".wav", ".ogg", ".oga", ".flac",
+  ".mp4", ".m4v", ".mov", ".webm", ".ogv", ".mkv",
+])
+
+const MAGIC_BYTES: Record<string, { bytes: number[]; offset?: number }[]> = {
+  "image/jpeg": [{ bytes: [0xff, 0xd8, 0xff] }],
+  "image/png": [{ bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }],
+  "image/gif": [{ bytes: [0x47, 0x49, 0x46, 0x38] }],
+  "image/webp": [{ bytes: [0x52, 0x49, 0x46, 0x46], offset: 0 }, { bytes: [0x57, 0x45, 0x42, 0x50], offset: 8 }],
+  "image/bmp": [{ bytes: [0x42, 0x4d] }],
+  "audio/mpeg": [{ bytes: [0xff, 0xfb] }, { bytes: [0xff, 0xfa] }, { bytes: [0xff, 0xf3] }, { bytes: [0xff, 0xf2] }, { bytes: [0x49, 0x44, 0x33] }],
+  "audio/wav": [{ bytes: [0x52, 0x49, 0x46, 0x46] }],
+  "audio/ogg": [{ bytes: [0x4f, 0x67, 0x67, 0x53] }],
+  "audio/flac": [{ bytes: [0x66, 0x4c, 0x61, 0x43] }],
+  "audio/aac": [{ bytes: [0xff, 0xf1] }, { bytes: [0xff, 0xf9] }],
+  "audio/mp4": [{ bytes: [0x66, 0x74, 0x79, 0x70], offset: 4 }],
+  "video/mp4": [{ bytes: [0x66, 0x74, 0x79, 0x70], offset: 4 }],
+  "video/webm": [{ bytes: [0x1a, 0x45, 0xdf, 0xa3] }],
+  "video/ogg": [{ bytes: [0x4f, 0x67, 0x67, 0x53] }],
+  "video/quicktime": [{ bytes: [0x66, 0x74, 0x79, 0x70], offset: 4 }],
+  "video/x-matroska": [{ bytes: [0x1a, 0x45, 0xdf, 0xa3] }],
+}
+
+const validateMagicBytes = (buffer: Buffer, mime: string): boolean => {
+  const signatures = MAGIC_BYTES[mime]
+  if (!signatures) {
+    return false
+  }
+
+  for (const sig of signatures) {
+    const offset = sig.offset || 0
+    if (buffer.length < offset + sig.bytes.length) continue
+
+    let match = true
+    for (let i = 0; i < sig.bytes.length; i++) {
+      if (buffer[offset + i] !== sig.bytes[i]) {
+        match = false
+        break
+      }
+    }
+    if (match) return true
+  }
+
+  return false
+}
+
 export type StoredMedia = {
   fileName: string
   url: string
@@ -192,16 +240,27 @@ export const storeMediaFile = async (file: File): Promise<StoredMedia> => {
   }
 
   const targetFolder = ensureMediaFolder()
-  const incomingMime = file.type || "application/octet-stream"
-  const mediaType = inferMediaType(incomingMime)
+  const incomingName = file.name || "upload"
+  const safeName = sanitizeFileName(incomingName)
+  const ext = path.extname(safeName).toLowerCase()
+
+  if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
+    throw new Error(`File extension "${ext || "(none)"}" is not allowed`)
+  }
+
+  const inferredMime = inferMimeFromName(safeName)
+  const mediaType = inferMediaType(inferredMime)
 
   if (!mediaType) {
     throw new Error("Unsupported media type")
   }
 
-  const incomingName = file.name || `${mediaType}-upload`
-  const safeName = sanitizeFileName(incomingName)
-  const ext = path.extname(safeName) || `.${incomingMime.split("/")[1] || "bin"}`
+  // SVG files are XML-based and don't have magic bytes, but we still allow them
+  // For other files, validate magic bytes to prevent disguised executables
+  if (ext !== ".svg" && !validateMagicBytes(buffer, inferredMime)) {
+    throw new Error("File content does not match its extension")
+  }
+
   const baseName = path.basename(safeName, ext)
 
   let finalName = `${baseName}${ext}`
@@ -216,13 +275,11 @@ export const storeMediaFile = async (file: File): Promise<StoredMedia> => {
 
   await fsp.writeFile(finalPath, buffer)
 
-  const mime = incomingMime || inferMimeFromName(finalName)
-
   return {
     fileName: finalName,
     url: `/media/${encodeURIComponent(finalName)}`,
     size: buffer.byteLength,
-    mime,
+    mime: inferredMime,
     type: mediaType,
     usedBy: [],
   }

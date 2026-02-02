@@ -1,5 +1,6 @@
 import { QuizzWithId } from "@rahoot/common/types/game"
 import fs from "fs"
+import path from "path"
 import { resolve } from "path"
 
 const slugify = (value: string) =>
@@ -8,6 +9,13 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 50)
+
+const sanitizeId = (id: string): string | null => {
+  if (!id || typeof id !== "string") return null
+  const safe = path.basename(id).replace(/[^a-zA-Z0-9_-]/g, "")
+  if (!safe || safe !== id) return null
+  return safe
+}
 
 const inContainerPath = process.env.CONFIG_PATH
 
@@ -207,7 +215,12 @@ class Config {
   static getQuizz(id: string) {
     this.ensureBaseFolders()
 
-    const filePath = getPath(`quizz/${id}.json`)
+    const safeId = sanitizeId(id)
+    if (!safeId) {
+      return null
+    }
+
+    const filePath = getPath(`quizz/${safeId}.json`)
 
     if (!fs.existsSync(filePath)) {
       return null
@@ -215,7 +228,7 @@ class Config {
 
     const data = fs.readFileSync(filePath, "utf-8")
 
-    return { id, ...JSON.parse(data) } as QuizzWithId
+    return { id: safeId, ...JSON.parse(data) } as QuizzWithId
   }
 
   static saveQuizz(
@@ -247,7 +260,13 @@ class Config {
 
   static deleteQuizz(id: string) {
     this.ensureBaseFolders()
-    const filePath = getPath(`quizz/${id}.json`)
+
+    const safeId = sanitizeId(id)
+    if (!safeId) {
+      return false
+    }
+
+    const filePath = getPath(`quizz/${safeId}.json`)
 
     if (!fs.existsSync(filePath)) {
       return false
